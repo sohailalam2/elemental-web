@@ -23,4 +23,8 @@ This is only available on Node v16+.
 - All modern browsers
 - NOT Internet Explorer
 
+## Debug
+
+Debug logs can be enabled by globally exposing a truthy value for `__ABU_DEBUG__`
+
 ## 🌏 [Read Documentation](https://sohailalam2.github.io/abu/)
