@@ -1,4 +1,5 @@
-export * from './ElementalComponent';
 export * from './exceptions';
 export * from './types';
-export * from './value-objects';
+export * from './values';
+export * from './ElementalComponent';
+export * from './DefaultEventController';

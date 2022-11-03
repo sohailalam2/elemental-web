@@ -2,7 +2,7 @@ import { ValueObject } from '@sohailalam2/abu';
 import { ElementalComponentInvalidComponentIdException, InvalidElementalComponentPrefixException } from './';
 
 export class ElementalComponentPrefix extends ValueObject {
-  private static readonly PATTERN = /^[a-zA-Z]{1,10}([_-]?[0-9a-zA-Z]{0,10}){0,2}\b$/;
+  private static readonly PATTERN = /^[a-zA-Z]{1,10}([_-]?[0-9a-zA-Z]{0,10})\b$/;
 
   validate() {
     super.validate();

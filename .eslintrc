@@ -694,7 +694,7 @@
     "dot-notation": "error",
     "eqeqeq": ["error", "always"],
     "guard-for-in": "error",
-    "max-classes-per-file": ["error", 5],
+    "max-classes-per-file": ["error", 10],
     "no-alert": ["warn"],
     "no-caller": "error",
     "no-case-declarations": ["error"],
