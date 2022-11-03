@@ -18,6 +18,7 @@
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
+  "types": "./dist/types/index.d.ts",
   "files": [
     "dist"
   ],
@@ -76,6 +77,10 @@
     ".": {
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
+    },
+    "./elemental-component": {
+      "import": "./dist/elemental-component/index.mjs",
+      "require": "./dist/elemental-component/index.js"
     }
   },
   "husky": {

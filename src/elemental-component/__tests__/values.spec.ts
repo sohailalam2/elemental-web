@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { ElementalComponentInvalidComponentIdException, InvalidElementalComponentPrefixException } from '../exceptions';
-import { ElementalComponentId, ElementalComponentPrefix } from '../values';
+import {
+  ElementalComponentId,
+  ElementalComponentInvalidComponentIdException,
+  ElementalComponentPrefix,
+  InvalidElementalComponentPrefixException,
+} from '../values';
 
 describe('elemental-component/value-objects', () => {
   describe('ElementalComponentPrefix', () => {

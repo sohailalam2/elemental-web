@@ -1,15 +1,14 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment, no-magic-numbers */
 import { describe, expect, it, vi } from 'vitest';
 
-import { DefaultRegistry } from '../DefaultRegistry';
-import { EventListenerRegistration } from '../types';
-import { DefaultEventController } from '../DefaultEventController';
-import { ElementalComponentCustomEventHandlerIsNotDefined } from '../exceptions';
+import { ElementalComponentRegistry } from '../registry';
+import { EventListenerRegistration } from './types';
+import { DefaultEventController, ElementalComponentCustomEventHandlerIsNotDefined } from './';
 
 describe('DefaultEventController', () => {
   it('should throw exception when both handler and handlerName are missing', () => {
     class MyComponentCantRegisterHandler extends HTMLElement {}
-    DefaultRegistry.registerComponent(MyComponentCantRegisterHandler);
+    ElementalComponentRegistry.registerComponent(MyComponentCantRegisterHandler);
     const component = new MyComponentCantRegisterHandler();
     const controller = new DefaultEventController(component);
 
@@ -20,7 +19,7 @@ describe('DefaultEventController', () => {
 
   it('should throw exception when handler is not found', () => {
     class MyComponentHandlerMissing extends HTMLElement {}
-    DefaultRegistry.registerComponent(MyComponentHandlerMissing);
+    ElementalComponentRegistry.registerComponent(MyComponentHandlerMissing);
     const component = new MyComponentHandlerMissing();
     const controller = new DefaultEventController(component);
 
@@ -35,15 +34,17 @@ describe('DefaultEventController', () => {
         // do nothing
       }
     }
-    DefaultRegistry.registerComponent(MyComponentHandlerRegisteredMultipleTimes);
+    ElementalComponentRegistry.registerComponent(MyComponentHandlerRegisteredMultipleTimes);
     const component = new MyComponentHandlerRegisteredMultipleTimes();
     const controller = new DefaultEventController(component);
     const registrations: EventListenerRegistration[] = [{ name: 'click', handlerName: 'onClickHandler' }];
 
+    // @ts-ignore
+    expect(controller.eventListeners.size).toEqual(0);
     expect(() => controller.registerEventListeners(registrations)).to.not.throw();
     expect(() => controller.registerEventListeners(registrations)).to.not.throw();
     // @ts-ignore
-    expect(controller.eventListeners.has(registrations[0].name)).toEqual(true);
+    expect(controller.eventListeners.size).toEqual(registrations.length);
   });
 
   it('should register handler for default events', () => {
@@ -52,7 +53,7 @@ describe('DefaultEventController', () => {
         // do nothing
       }
     }
-    DefaultRegistry.registerComponent(MyComponentWithLocalEvents);
+    ElementalComponentRegistry.registerComponent(MyComponentWithLocalEvents);
     const component = new MyComponentWithLocalEvents();
     const controller = new DefaultEventController(component);
     const registrations: EventListenerRegistration[] = [{ name: 'click', handlerName: 'onClickHandler' }];
@@ -65,31 +66,31 @@ describe('DefaultEventController', () => {
     controller.raiseEvent('click');
 
     // @ts-ignore
-    expect(controller.eventListeners.has(registrations[0].name)).toEqual(true);
+    expect(controller.eventListeners.size).toEqual(registrations.length);
     expect(spy).toHaveBeenCalledOnce();
   });
 
-  it.todo('should register handler using method reference for default events', () => {
+  it('should register handler using method reference for default events', () => {
     class MyComponentWithLocalEventsMethodRef extends HTMLElement {
+      public isCalled = false;
+
       clickHandler() {
-        // do nothing
+        this.isCalled = true;
       }
     }
-    DefaultRegistry.registerComponent(MyComponentWithLocalEventsMethodRef);
+    ElementalComponentRegistry.registerComponent(MyComponentWithLocalEventsMethodRef);
     const component = new MyComponentWithLocalEventsMethodRef();
     const controller = new DefaultEventController(component);
-    const registrations: EventListenerRegistration[] = [{ name: 'click', handler: component.clickHandler }];
-
-    const spy = vi.spyOn(component, 'clickHandler').mockImplementation(() => {
-      // do nothing
-    });
+    const registrations: EventListenerRegistration[] = [
+      { name: 'click', handler: component.clickHandler, attachTo: component },
+    ];
 
     controller.registerEventListeners(registrations);
-    controller.raiseEvent('click');
+    component.click();
 
     // @ts-ignore
-    expect(controller.eventListeners.has(registrations[0].name)).toEqual(true);
-    expect(spy).toHaveBeenCalledOnce();
+    expect(controller.eventListeners.size).toEqual(registrations.length);
+    expect(component.isCalled).toBeTruthy();
   });
 
   it('should register handler for custom events', () => {
@@ -98,7 +99,7 @@ describe('DefaultEventController', () => {
         // do nothing
       }
     }
-    DefaultRegistry.registerComponent(MyComponentCustomEventsConsumer);
+    ElementalComponentRegistry.registerComponent(MyComponentCustomEventsConsumer);
     const consumer = new MyComponentCustomEventsConsumer();
     const controller = new DefaultEventController(consumer);
     const registrations: EventListenerRegistration[] = [
@@ -111,7 +112,7 @@ describe('DefaultEventController', () => {
     controller.registerEventListeners(registrations);
 
     class MyButton extends HTMLElement {}
-    DefaultRegistry.registerComponent(MyButton);
+    ElementalComponentRegistry.registerComponent(MyButton);
 
     const button = new MyButton();
     const buttonController = new DefaultEventController(button);
@@ -122,7 +123,7 @@ describe('DefaultEventController', () => {
     buttonController.raiseEvent('some-custom-event', true, 'payload');
 
     // @ts-ignore
-    expect(controller.eventListeners.has(registrations[0].name)).toEqual(true);
+    expect(controller.eventListeners.size).toEqual(registrations.length);
     expect(spy).toHaveBeenCalledTimes(2);
   });
 
@@ -132,7 +133,7 @@ describe('DefaultEventController', () => {
         // do nothing
       }
     }
-    DefaultRegistry.registerComponent(MyComponentHandlerDeregistration);
+    ElementalComponentRegistry.registerComponent(MyComponentHandlerDeregistration);
     const component = new MyComponentHandlerDeregistration();
     const controller = new DefaultEventController(component);
     const registrations: EventListenerRegistration[] = [
@@ -142,14 +143,10 @@ describe('DefaultEventController', () => {
 
     controller.registerEventListeners(registrations);
     // @ts-ignore
-    expect(controller.eventListeners.has(registrations[0].name)).toEqual(true);
-    // @ts-ignore
-    expect(controller.eventListeners.has(registrations[1].name)).toEqual(true);
+    expect(controller.eventListeners.size).toEqual(registrations.length);
 
     controller.deregisterEventListeners();
     // @ts-ignore
-    expect(controller.eventListeners.has(registrations[0].name)).toEqual(false);
-    // @ts-ignore
-    expect(controller.eventListeners.has(registrations[1].name)).toEqual(false);
+    expect(controller.eventListeners.size).toEqual(0);
   });
 });

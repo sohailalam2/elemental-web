@@ -39,7 +39,7 @@ export default defineConfig({
 // Dynamically generate the menu
 // each nested directory must have an index file
 function readDirAndConvertName(dirPath) {
-  const objects = readdirSync(dirPath).filter(name => name !== '.vitepress');
+  const objects = readdirSync(dirPath).filter(name => !['.vitepress', '__tests__'].includes(name));
   let nav = [];
 
   for (const name of objects) {

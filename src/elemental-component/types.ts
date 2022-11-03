@@ -1,56 +1,46 @@
-import { ElementalComponentId, ElementalComponentPrefix } from './values';
-
-export interface EventOptions {
-  bubbles?: boolean;
-  cancelable?: boolean;
-  composed?: boolean;
-}
-
-export interface EventListenerRegistration {
-  name: string;
-  handlerName?: string;
-  handler?: (e: Event) => void;
-  isCustomEvent?: boolean;
-  options?: {
-    capture?: boolean;
-    passive?: boolean;
-    once?: boolean;
-    signal?: AbortSignal;
-  };
-}
-
-export interface EventController {
-  registerEventListeners: (registrations: EventListenerRegistration[]) => void;
-
-  deregisterEventListeners: () => void;
-
-  raiseEvent: <Payload = undefined>(
-    name: string,
-    isCustom?: boolean,
-    payload?: Payload,
-    options?: EventOptions,
-  ) => void;
-}
-
-export interface RegistrationOptions {
-  prefix?: ElementalComponentPrefix;
-
-  /**
-   * @deprecated
-   *
-   * The extension of native HTML components is not supported by Safari.
-   * The team has decided to not support it in the future either. So use this functionality with caution
-   */
-  extends?: string;
-}
+import { ElementalComponentId } from './values';
+import { EventListenerRegistration } from './controller';
 
 export interface ElementalComponentOptions {
+  /**
+   * Each `ElementalComponent` by defaults gets an internal `state` of type that
+   * was declared in the component definition. The state can be access using the
+   * `this.$state` property.
+   */
   state?: unknown;
-  prefix?: ElementalComponentPrefix;
+
+  /**
+   * An optional `id` for the instance of the custom element.
+   * An alphanumeric ID will be auto generated if one is not provided here.
+   */
   id?: ElementalComponentId;
+
+  /**
+   * By default, an `ElementalComponent` is created with a shadowRoot
+   * (enclosed in a shadow DOM). However, this configuration property allows us
+   * to create an instance without a shadow DOM.
+   */
   noShadow?: boolean;
+
+  /**
+   * By default, an `ElementalComponent` is created with a shadow DOM in the
+   * 'open' mode. However, this configuration property allows us to create one
+   * in a 'closed' mode.
+   */
   // eslint-disable-next-line no-undef
   mode?: ShadowRootMode;
+
+  /**
+   * A boolean that, when set to true, specifies behavior that mitigates
+   * custom element issues around focusability. When a non-focusable part
+   * of the shadow DOM is clicked, the first focusable part is given focus,
+   * and the shadow host is given any available :focus styling.
+   */
   delegatesFocus?: boolean;
+
+  /**
+   * Event Listeners can be auto registered if they are configured here.
+   * Read more in the Controller section of the guide.
+   */
   eventHandlers?: EventListenerRegistration[];
 }

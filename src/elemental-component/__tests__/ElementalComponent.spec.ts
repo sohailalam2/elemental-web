@@ -3,12 +3,14 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { toKebabCase } from '@sohailalam2/abu';
 
 import { ElementalComponentOptions } from '../types';
-import { ElementalComponent } from '../ElementalComponent';
-import { ElementalComponentIsNotRegisteredException, UnableToRenderElementalComponentException } from '../exceptions';
+import { ElementalComponentIsNotRegisteredException } from '../registry';
+import { ElementalComponent, UnableToRenderElementalComponentException } from '../ElementalComponent';
 
-import crypto from 'crypto';
 import { ShadowRoot } from 'happy-dom';
 
+// we need to define webcrypto because Abu uses it to generate the random numbers
+// and this is not available in the simulated DOM test environment
+import crypto from 'crypto';
 Object.defineProperty(globalThis, 'crypto', { value: { webcrypto: crypto.webcrypto } });
 
 describe('ElementalComponent', () => {
@@ -120,7 +122,7 @@ describe('ElementalComponent', () => {
     expect(component.constructor.name).toEqual(MyComponentName.name);
   });
 
-  it('instance should return the correct uid', () => {
+  it('instance should return the correct tagName', () => {
     class MyComponentTagName extends MyComponent {}
     ElementalComponent.register(MyComponentTagName);
     const component = new MyComponentTagName();

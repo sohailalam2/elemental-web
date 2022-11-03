@@ -1,5 +1,8 @@
-import { ValueObject } from '@sohailalam2/abu';
-import { ElementalComponentInvalidComponentIdException, InvalidElementalComponentPrefixException } from './';
+import { Exception, ValueObject } from '@sohailalam2/abu';
+
+export class InvalidElementalComponentPrefixException extends Exception {}
+
+export class ElementalComponentInvalidComponentIdException extends Exception {}
 
 export class ElementalComponentPrefix extends ValueObject {
   private static readonly PATTERN = /^[a-zA-Z]{1,10}([_-]?[0-9a-zA-Z]{0,10})\b$/;

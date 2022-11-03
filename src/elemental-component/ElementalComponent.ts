@@ -1,16 +1,15 @@
-import { Class, debug, deserialize, hasValue, randomId, serialize } from '@sohailalam2/abu';
+import { Class, debug, deserialize, Exception, hasValue, randomId, serialize } from '@sohailalam2/abu';
 
-import {
-  ElementalComponentOptions,
-  EventListenerRegistration,
-  EventOptions,
-  RegistrationOptions,
-  EventController,
-} from './types';
-import { DefaultRegistry } from './DefaultRegistry';
+import { ElementalComponentOptions } from './types';
 import { ElementalComponentPrefix } from './values';
-import { DefaultEventController } from './DefaultEventController';
-import { UnableToRenderElementalComponentException, ElementalComponentIsNotRegisteredException } from './exceptions';
+import {
+  RegistrationOptions,
+  ElementalComponentRegistry,
+  ElementalComponentIsNotRegisteredException,
+} from './registry';
+import { DefaultEventController, EventController, EventListenerRegistration, EventOptions } from './controller';
+
+export class UnableToRenderElementalComponentException extends Exception {}
 
 /**
  * ElementalComponent Class
@@ -39,13 +38,13 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
     super();
     this.eventController = new DefaultEventController(this);
 
-    if (!DefaultRegistry.isComponentRegisteredByClassName(this.constructor.name)) {
+    if (!ElementalComponentRegistry.isComponentRegisteredByClassName(this.constructor.name)) {
       throw new ElementalComponentIsNotRegisteredException(this.constructor.name);
     }
 
     // create a unique id for the component
     this.id = options?.id?.valueOf() || randomId();
-    this.tagName = DefaultRegistry.generateTagNameFromClassName(this.constructor.name);
+    this.tagName = ElementalComponentRegistry.generateTagNameFromClassName(this.constructor.name);
 
     // attach any event listener
     this.registerEventListeners(this.options?.eventHandlers || []);
@@ -76,7 +75,7 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
     element: Class<T>,
     options?: RegistrationOptions,
   ): void {
-    DefaultRegistry.registerComponent(element, options);
+    ElementalComponentRegistry.registerComponent(element, options);
   }
 
   public static registerTemplate<T extends ElementalComponent<unknown>>(
@@ -84,14 +83,14 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
     template: string,
     prefix?: ElementalComponentPrefix,
   ): void {
-    DefaultRegistry.registerTemplate(element, template, prefix);
+    ElementalComponentRegistry.registerTemplate(element, template, prefix);
   }
 
   public static tagName<T extends ElementalComponent<unknown>>(
     element: Class<T>,
     prefix?: ElementalComponentPrefix,
   ): string {
-    return DefaultRegistry.generateTagName(element, prefix);
+    return ElementalComponentRegistry.generateTagName(element, prefix);
   }
 
   public get $state(): State {
@@ -120,8 +119,35 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
     this.eventController.deregisterEventListeners();
   }
 
-  public raiseEvent<Payload = undefined>(name: string, isCustom?: boolean, payload?: Payload, options?: EventOptions) {
-    this.eventController.raiseEvent(name, isCustom, payload, options);
+  public raiseEvent(name: string, options?: EventOptions): void;
+
+  public raiseEvent(name: string, isCustom?: boolean, options?: EventOptions): void;
+
+  public raiseEvent<Payload = undefined>(
+    name: string,
+    isCustom?: boolean,
+    payload?: Payload,
+    options?: EventOptions,
+  ): void;
+
+  public raiseEvent<Payload = undefined>(
+    name: string,
+    isCustomOrOptions?: boolean | EventOptions,
+    payload?: Payload,
+    options?: EventOptions,
+  ) {
+    let isCustom = false;
+    let opts: EventOptions | undefined = options;
+
+    if (hasValue(isCustomOrOptions)) {
+      if (typeof isCustomOrOptions === 'boolean') {
+        isCustom = isCustomOrOptions;
+      } else if (!options) {
+        opts = isCustomOrOptions;
+      }
+    }
+
+    this.eventController.raiseEvent(name, isCustom, payload, opts);
   }
 
   protected connectedCallback() {
