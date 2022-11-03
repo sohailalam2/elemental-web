@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.1](https://github.com/sohailalam2/elemental-web/compare/v0.0.1-1...v0.0.1) (2022-11-03)
+
+### Features
+
+- refactor, document and test elemental component ([4b3ce98](https://github.com/sohailalam2/elemental-web/commit/4b3ce98d3531024a84986aaa1145a6c659359275))
+
 ### [0.0.1-1](https://github.com/sohailalam2/elemental-web/compare/v0.0.1-0...v0.0.1-1) (2022-11-03)
 
 ### Features
