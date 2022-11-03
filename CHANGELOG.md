@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.1-1](https://github.com/sohailalam2/elemental-web/compare/v0.0.1-0...v0.0.1-1) (2022-11-03)
+
+### Features
+
+- add template registration, controller, event handlers ([87ffcfe](https://github.com/sohailalam2/elemental-web/commit/87ffcfe7c3c892a7f7d99212a6a3af7da059ab75))
+
 ### 0.0.1-0 (2022-11-01)
 
 ### Features
