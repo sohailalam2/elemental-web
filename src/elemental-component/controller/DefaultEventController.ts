@@ -29,46 +29,31 @@ export class DefaultEventController<T extends HTMLElement> implements EventContr
 
         return;
       }
-
-      const methodRef =
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        // eslint-disable-next-line security/detect-object-injection
-        handler || (this.component[handlerName] as (e: Event) => void)?.bind(this.component);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      // eslint-disable-next-line security/detect-object-injection
+      const methodRef = handler || (this.component[handlerName] as (e: Event) => void)?.bind(this.component);
 
       if (!methodRef) {
         throw new ElementalComponentCustomEventHandlerIsNotDefined(handlerName);
       }
-
       handler = methodRef;
       handlerName = methodRef.name;
-
-      if (!options) {
-        options = { capture: true, ...(options || {}) };
-      }
-
+      options = { capture: true, ...(options || {}) };
+      (isCustomEvent ? document : attachTo).addEventListener(name, methodRef, options);
       this.eventListeners.set(`[${attachTo.id}][${name}]`, { name, isCustomEvent, handlerName, handler, options });
-
-      if (isCustomEvent) {
-        document.addEventListener(name, methodRef, options);
-      } else {
-        attachTo.addEventListener(name, methodRef, options);
-      }
       this.debug(`Added EventListener ${eventListenerKey} => ${methodRef.name}`);
     });
   }
 
   public deregisterEventListeners(): void {
     for (const [eventListenerKey, reg] of this.eventListeners.entries()) {
-      if (reg && reg.name && reg.handler) {
-        if (reg.isCustomEvent) {
-          document.removeEventListener(reg.name, reg.handler, reg.options);
-        } else {
-          this.component.removeEventListener(reg.name, reg.handler, reg.options);
-        }
-        this.eventListeners.delete(eventListenerKey);
-        this.debug(`Removed EventListener ${eventListenerKey} => ${reg.handler.name}`);
+      if (!reg || !reg.name || !reg.handler) {
+        return;
       }
+      (reg.isCustomEvent ? document : this.component).removeEventListener(reg.name, reg.handler, reg.options);
+      this.eventListeners.delete(eventListenerKey);
+      this.debug(`Removed EventListener ${eventListenerKey} => ${reg.handler.name}`);
     }
   }
 

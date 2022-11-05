@@ -7,25 +7,17 @@ import {
 } from '../values';
 
 describe('elemental-component/value-objects', () => {
+  let validValues: string[];
+  let inValidValues: string[];
+
+  beforeEach(() => {
+    validValues = ['valid', 'valid-value', 'valid-123', 'valid_value', 'valid_123'];
+    inValidValues = ['123', '-invalid', 'invalid-', 'invalid*', '123-invalid', 'valid-123-value', 'valid-123_value'];
+  });
+
   describe('ElementalComponentPrefix', () => {
-    let validPrefixes: string[];
-    let invalidPrefixes: string[];
-
-    beforeEach(() => {
-      validPrefixes = ['valid', 'valid-prefix', 'valid-123', 'valid_prefix', 'valid_123'];
-      invalidPrefixes = [
-        '123',
-        '-invalid',
-        'invalid-',
-        'invalid*',
-        '123-invalid',
-        'valid-123-prefix',
-        'valid-123_prefix',
-      ];
-    });
-
     it('should instantiate a new value object with a valid prefix', () => {
-      validPrefixes.forEach(value => {
+      validValues.forEach(value => {
         const obj = ElementalComponentPrefix.from(value);
 
         expect(obj).toBeDefined();
@@ -34,23 +26,15 @@ describe('elemental-component/value-objects', () => {
     });
 
     it('should fail to instantiate a new value object with an invalid prefix', () => {
-      invalidPrefixes.forEach(value => {
+      inValidValues.forEach(value => {
         expect(() => ElementalComponentPrefix.from(value)).throws(InvalidElementalComponentPrefixException);
       });
     });
   });
 
   describe('ElementalComponentId', () => {
-    let validIds: string[];
-    let invalidIds: string[];
-
-    beforeEach(() => {
-      validIds = ['valid', 'valid-id', 'valid-123', 'valid_id', 'valid_123'];
-      invalidIds = ['123', '-invalid', 'invalid-', 'invalid*', '123-invalid', 'valid-123-id', 'valid-123_id'];
-    });
-
     it('should instantiate a new value object with a valid id', () => {
-      validIds.forEach(id => {
+      validValues.forEach(id => {
         const obj = ElementalComponentId.from(id);
 
         expect(obj).toBeDefined();
@@ -59,7 +43,7 @@ describe('elemental-component/value-objects', () => {
     });
 
     it('should fail to instantiate a new value object with an invalid id', () => {
-      invalidIds.forEach(id => {
+      inValidValues.forEach(id => {
         expect(() => ElementalComponentId.from(id)).throws(ElementalComponentInvalidComponentIdException);
       });
     });

@@ -112,6 +112,18 @@ interface ElementalComponentOptions {
    * Read more in the Controller section of the guide.
    */
   eventHandlers?: EventListenerRegistration[];
+
+  /**
+   * Elemental Web uses `sanitize-html` to sanitize the produced html before
+   * rendering it to DOM. One can optionally override it using this option
+   *
+   * @param html The dirty html
+   * @param options Any configuration options passed to the sanitizer
+   * @return the sanitized html
+   * @link https://github.com/apostrophecms/sanitize-html
+   */
+  sanitizer?: (html: string, options: unknown) => string;
+  sanitizerOptions?: unknown;
 }
 ```
 

@@ -20,6 +20,11 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
     return ['state'];
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static sanitize(html: string, _options?: unknown): string {
+    return html;
+  }
+
   public readonly tagName: string;
 
   public readonly $root: Element | ShadowRoot;
@@ -36,19 +41,17 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
    */
   constructor(private readonly options?: ElementalComponentOptions) {
     super();
-    this.eventController = new DefaultEventController(this);
+    const className = this.constructor.name;
+    const isRegistered = ElementalComponentRegistry.isComponentRegisteredByClassName(className);
 
-    if (!ElementalComponentRegistry.isComponentRegisteredByClassName(this.constructor.name)) {
-      throw new ElementalComponentIsNotRegisteredException(this.constructor.name);
+    if (!isRegistered) {
+      throw new ElementalComponentIsNotRegisteredException(className);
     }
 
-    // create a unique id for the component
     this.id = options?.id?.valueOf() || randomId();
-    this.tagName = ElementalComponentRegistry.generateTagNameFromClassName(this.constructor.name);
-
-    // attach any event listener
-    this.registerEventListeners(this.options?.eventHandlers || []);
-
+    this.tagName = ElementalComponentRegistry.generateTagNameFromClassName(className);
+    this.eventController = new DefaultEventController(this);
+    this.eventController.registerEventListeners(this.options?.eventHandlers || []);
     this.$root = options?.noShadow
       ? this
       : this.attachShadow({
@@ -56,14 +59,11 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
           mode: options?.mode || ('open' as ShadowRootMode),
           delegatesFocus: options?.delegatesFocus || true,
         });
-
-    // attach any template to shadow dom
     this.$template = (document.getElementById(this.tagName) as HTMLTemplateElement)?.content;
     if (this.$template) {
       this.debug('Attaching Template to ShadowRoot');
       this.$root.appendChild(this.$template.cloneNode(true));
     }
-
     if (hasValue(options?.state)) {
       this.updateState(options?.state as State); // will auto-render when update is done
     } else {
@@ -184,9 +184,12 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
   protected abstract render(): string;
 
   private renderComponent(): void {
-    const html = this.render();
+    let html = this.render();
 
     if (hasValue(html)) {
+      html = this.options?.sanitizer
+        ? this.options?.sanitizer(html, this.options?.sanitizerOptions)
+        : ElementalComponent.sanitize(html);
       this.debug('Rendering Component', html);
       this.$root.innerHTML = html;
 

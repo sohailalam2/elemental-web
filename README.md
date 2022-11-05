@@ -4,6 +4,14 @@
   <h5>Modern web technologies in a nutshell</h5>
 </section>
 
+[![Maintainability](https://api.codeclimate.com/v1/badges/f6100b2eaa51d397e1b0/maintainability)](https://codeclimate.com/github/sohailalam2/elemental-web/maintainability)
+[![github actions](https://github.com/sohailalam2/elemental-web/workflows/CI/badge.svg?branch=master)](https://github.com/sohailalam2/elemental-web/actions)
+[![npm](https://badgen.net/npm/v/@sohailalam2/elemental-web?icon=npm)](https://www.npmjs.com/package/@sohailalam2/elemental-web)
+[![snyk](https://snyk.io/test/npm/@sohailalam2/elemental-web/badge.svg)](https://snyk.io/test/npm/@sohailalam2/elemental-web)
+[![publish size](https://badgen.net/packagephobia/publish/@sohailalam2/elemental-web?icon=packagephobia)](https://bundlephobia.com/package/@sohailalam2/elemental-web)
+[![install size](https://packagephobia.com/badge?p=@sohailalam2/elemental-web@0.0.3)](https://packagephobia.com/result?p=@sohailalam2/elemental-web@0.0.3)
+[![license](https://badgen.net/badge/license/MIT/blue)](https://github.com/sohailalam2/elemental-web)
+
 ## 💻 Installation
 
 ```bash

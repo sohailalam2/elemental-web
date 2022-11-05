@@ -209,4 +209,25 @@ describe('ElementalComponent', () => {
     expect(element.innerHTML).toEqual('');
     expect(element.$root.innerHTML).toEqual(renderedHtml);
   });
+
+  it.todo('should sanitize the input html before rendering', () => {
+    const inputHtml = `
+        <strong>
+            hello world<img src="x" onerror=alert('img') /><script>alert('hello world')</script>
+        </strong>`;
+    const expectedHtml = `
+        <strong>
+            hello world<img src="x">
+        </strong>`;
+
+    class MySanitizedComponent extends ElementalComponent {
+      render(): string {
+        return inputHtml;
+      }
+    }
+    ElementalComponent.register(MySanitizedComponent);
+    const component = document.body.appendChild(new MySanitizedComponent()) as MySanitizedComponent;
+
+    expect(component.$root.innerHTML).toEqual(expectedHtml);
+  });
 });
