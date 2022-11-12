@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.1](https://github.com/sohailalam2/elemental-web/compare/v0.1.0...v0.1.1) (2022-11-12)
+
+### Bug Fixes
+
+- broken docs build ([5f26a09](https://github.com/sohailalam2/elemental-web/commit/5f26a09ceb8cbd252d6b4fbb9a287eeae4897b7c))
+
 ## [0.1.0](https://github.com/sohailalam2/elemental-web/compare/v0.0.4...v0.1.0) (2022-11-12)
 
 ### Features
