@@ -6,7 +6,7 @@ import {
   InvalidElementalComponentPrefixException,
 } from '../values';
 
-describe('elemental-component/value-objects', () => {
+describe('elemental-component/values', () => {
   let validValues: string[];
   let inValidValues: string[];
 

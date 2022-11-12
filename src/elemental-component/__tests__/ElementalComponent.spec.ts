@@ -1,10 +1,10 @@
 /* eslint-disable  @typescript-eslint/ban-ts-comment, no-console, max-classes-per-file */
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { toKebabCase } from '@sohailalam2/abu';
 
 import { ElementalComponentOptions } from '../types';
 import { ElementalComponentIsNotRegisteredException } from '../registry';
-import { ElementalComponent, UnableToRenderElementalComponentException } from '../ElementalComponent';
+import { ElementalComponent } from '../ElementalComponent';
 
 import { ShadowRoot } from 'happy-dom';
 
@@ -19,29 +19,27 @@ describe('ElementalComponent', () => {
       super(options);
     }
 
-    protected render(): string {
-      if (this.$template) {
-        const p = this.$root.querySelector('p');
+    protected render() {
+      if (!this.$template && this.$state) {
+        this.$root.innerHTML = `<span>${this.$state}</span>`;
 
-        if (p) {
-          p.textContent = this.$state;
-        }
-
-        return this.$root.innerHTML;
+        return;
       }
 
-      return `<p>${this.$state}</p>`;
+      const p = this.$root.querySelector('p');
+
+      if (p) {
+        p.textContent = this.$state;
+      }
     }
   }
 
   let myComponentState: string;
+  let templateContent: string;
 
   beforeEach(() => {
     myComponentState = 'Hello World!';
-  });
-
-  afterEach(() => {
-    document.body.innerHTML = '';
+    templateContent = `<section><h1>Hello!!</h1><p></p></section>`;
   });
 
   // @vitest-environment happy-dom
@@ -63,8 +61,8 @@ describe('ElementalComponent', () => {
         return ['count'];
       }
 
-      render(): string {
-        return '';
+      render() {
+        // do nothing
       }
     }
 
@@ -147,25 +145,14 @@ describe('ElementalComponent', () => {
     expect(component.cloneState()).toEqual(myComponentState);
   });
 
-  it('instance should throw UnableToRenderElementalComponentException', () => {
-    class AnInvalidComponent extends ElementalComponent {
-      protected render(): string {
-        return '';
-      }
-    }
-
-    ElementalComponent.register(AnInvalidComponent);
-
-    expect(() => new AnInvalidComponent()).toThrowError(UnableToRenderElementalComponentException);
-  });
-
-  it('instance render method should return the correct dom', () => {
+  it('instance render method should render the correct dom', () => {
     class MyComponentRenderWorks extends MyComponent {}
     ElementalComponent.register(MyComponentRenderWorks);
+    const div = document.createElement('div');
     const component = new MyComponentRenderWorks();
 
-    // eslint-disable-next-line
-    expect(component['render']()).toEqual(`<p>${myComponentState}</p>`);
+    div.appendChild(component);
+    expect(component.$root.innerHTML).toEqual(`<span>Hello World!</span>`);
   });
 
   it('instance should render the correct dom from render method', () => {
@@ -182,52 +169,27 @@ describe('ElementalComponent', () => {
     expect(element.tagName.toLowerCase()).toEqual(cid);
     expect(element.isConnected).toEqual(true);
     expect(element.innerHTML).toEqual('');
-    expect(element.$root.innerHTML).toEqual(`<p>${myComponentState}</p>`);
+    expect(element.$root.innerHTML).toEqual(`<span>${myComponentState}</span>`);
   });
 
   it('instance should render the correct dom from template', () => {
     class MyComponentRendersTemplate extends MyComponent {}
+    const tagName = `el-${toKebabCase(MyComponentRendersTemplate.name)}`;
+    const renderedHtml = templateContent.replace('<p></p>', `<p>template state</p>`);
+
     ElementalComponent.register(MyComponentRendersTemplate);
+    ElementalComponent.registerTemplate(MyComponentRendersTemplate, templateContent);
 
-    const cid = `el-${toKebabCase(MyComponentRendersTemplate.name)}`;
-    const template = `<template id="${cid}"><section><h1>Hello!!</h1><p></p></section></template>`;
-    const renderedHtml = `<section><h1>Hello!!</h1><p>${myComponentState}</p></section>`;
-
-    // create template
-    document.body.innerHTML = '<div><h1>Test My Component With Template</h1></div>';
-    document.body.innerHTML += template;
-
-    const domComponentWithTemplate = document.createElement(cid) as MyComponentRendersTemplate;
+    const domComponentWithTemplate = document.createElement(tagName) as MyComponentRendersTemplate;
 
     // NOTE: it is important to use updateState to pass the state to the component for rendering
     document.body.appendChild(domComponentWithTemplate);
-    domComponentWithTemplate.updateState(myComponentState);
-    const element = document.querySelector(cid) as MyComponentRendersTemplate;
+    domComponentWithTemplate.updateState('template state');
+    const element = document.querySelector(tagName) as MyComponentRendersTemplate;
 
-    expect(element.tagName.toLowerCase()).toEqual(cid);
+    expect(element.tagName.toLowerCase()).toEqual(tagName);
     expect(element.isConnected).toEqual(true);
     expect(element.innerHTML).toEqual('');
     expect(element.$root.innerHTML).toEqual(renderedHtml);
-  });
-
-  it.todo('should sanitize the input html before rendering', () => {
-    const inputHtml = `
-        <strong>
-            hello world<img src="x" onerror=alert('img') /><script>alert('hello world')</script>
-        </strong>`;
-    const expectedHtml = `
-        <strong>
-            hello world<img src="x">
-        </strong>`;
-
-    class MySanitizedComponent extends ElementalComponent {
-      render(): string {
-        return inputHtml;
-      }
-    }
-    ElementalComponent.register(MySanitizedComponent);
-    const component = document.body.appendChild(new MySanitizedComponent()) as MySanitizedComponent;
-
-    expect(component.$root.innerHTML).toEqual(expectedHtml);
   });
 });

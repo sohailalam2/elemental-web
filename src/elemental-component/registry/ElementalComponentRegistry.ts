@@ -19,10 +19,14 @@ export class ElementalComponentRegistry {
   // set(class-name)
   private static readonly TEMPLATE_REGISTRY: Set<string> = new Set();
 
-  private static readonly DEFAULT_PREFIX = 'el';
+  private static defaultPrefix = ElementalComponentPrefix.from('el');
 
   private constructor() {
     // can not create instance of registry
+  }
+
+  public static setDefaultPrefix(prefix: ElementalComponentPrefix): void {
+    ElementalComponentRegistry.defaultPrefix = prefix;
   }
 
   public static generateTagNameFromClassName(className: string, prefix?: ElementalComponentPrefix): string {
@@ -30,7 +34,7 @@ export class ElementalComponentRegistry {
       return ElementalComponentRegistry.COMPONENT_REGISTRY.get(className) as string;
     }
 
-    const pfx = prefix || new ElementalComponentPrefix(ElementalComponentRegistry.DEFAULT_PREFIX);
+    const pfx = prefix || ElementalComponentRegistry.defaultPrefix;
 
     return `${pfx.value}-${toKebabCase(className)}`;
   }
@@ -47,13 +51,12 @@ export class ElementalComponentRegistry {
     }
 
     debug(`[elemental-component] Registering Component "${tagName}"`);
-    ElementalComponentRegistry.COMPONENT_REGISTRY.set(element.name, tagName); // the order is important here
 
-    if (options?.extends) {
-      customElements.define(tagName, element, { extends: options.extends });
-    } else {
-      customElements.define(tagName, element);
-    }
+    // Register the component... the order is important here
+    // 1. > Register in ElementalComponentRegistry
+    ElementalComponentRegistry.COMPONENT_REGISTRY.set(element.name, tagName);
+    // 2. > Register in customElements.define()
+    customElements.define(tagName, element, { extends: options?.extends ?? undefined });
 
     debug(`[elemental-component] Component Registration Complete "${tagName}"`);
   }

@@ -10,6 +10,12 @@ export class DefaultEventController<T extends HTMLElement> implements EventContr
 
   constructor(private readonly component: T) {}
 
+  private static isBound(func: unknown): boolean {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return func.name.startsWith('bound ') && !Object.hasOwn(func, 'prototype');
+  }
+
   public registerEventListeners(registrations: EventListenerRegistration[]): void {
     registrations.forEach(registration => {
       const { name, isCustomEvent } = registration;
@@ -19,8 +25,21 @@ export class DefaultEventController<T extends HTMLElement> implements EventContr
         throw new ElementalComponentCustomEventHandlerIsNotDefined(handlerName);
       }
 
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      // eslint-disable-next-line security/detect-object-injection
+      let methodRef = handler || (this.component[handlerName] as (e: Event) => void);
+
+      if (!methodRef) {
+        throw new ElementalComponentCustomEventHandlerIsNotDefined(handlerName);
+      }
+
+      if (!DefaultEventController.isBound(methodRef)) {
+        methodRef = methodRef.bind(this.component);
+      }
+
       attachTo = attachTo ?? this.component;
-      const eventListenerKey = `[${attachTo.id}][${name}]`;
+      const eventListenerKey = `[${attachTo.tagName}][${attachTo.id}][${name}][${methodRef.name}]`;
 
       if (this.eventListeners.has(eventListenerKey)) {
         this.debug(
@@ -29,14 +48,7 @@ export class DefaultEventController<T extends HTMLElement> implements EventContr
 
         return;
       }
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // eslint-disable-next-line security/detect-object-injection
-      const methodRef = handler || (this.component[handlerName] as (e: Event) => void)?.bind(this.component);
 
-      if (!methodRef) {
-        throw new ElementalComponentCustomEventHandlerIsNotDefined(handlerName);
-      }
       handler = methodRef;
       handlerName = methodRef.name;
       options = { capture: true, ...(options || {}) };

@@ -9,7 +9,7 @@ import {
 } from './registry';
 import { DefaultEventController, EventController, EventListenerRegistration, EventOptions } from './controller';
 
-export class UnableToRenderElementalComponentException extends Exception {}
+export class NoSuchTemplateFoundWithTheGivenIdException extends Exception {}
 
 /**
  * ElementalComponent Class
@@ -20,16 +20,11 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
     return ['state'];
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static sanitize(html: string, _options?: unknown): string {
-    return html;
-  }
-
   public readonly tagName: string;
 
   public readonly $root: Element | ShadowRoot;
 
-  public readonly $template: DocumentFragment;
+  protected readonly $template: HTMLTemplateElement;
 
   private readonly eventController: EventController;
 
@@ -39,7 +34,7 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
    * ElementalComponent Constructor
    * @param options The configuration options for the component
    */
-  constructor(private readonly options?: ElementalComponentOptions) {
+  constructor(private readonly options: ElementalComponentOptions = {}) {
     super();
     const className = this.constructor.name;
     const isRegistered = ElementalComponentRegistry.isComponentRegisteredByClassName(className);
@@ -48,26 +43,29 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
       throw new ElementalComponentIsNotRegisteredException(className);
     }
 
-    this.id = options?.id?.valueOf() || randomId();
-    this.tagName = ElementalComponentRegistry.generateTagNameFromClassName(className);
-    this.eventController = new DefaultEventController(this);
-    this.eventController.registerEventListeners(this.options?.eventHandlers || []);
-    this.$root = options?.noShadow
+    this.$root = options.noShadow
       ? this
       : this.attachShadow({
           // eslint-disable-next-line no-undef
-          mode: options?.mode || ('open' as ShadowRootMode),
-          delegatesFocus: options?.delegatesFocus || true,
+          mode: options.mode || ('open' as ShadowRootMode),
+          delegatesFocus: options.delegatesFocus ?? true,
         });
-    this.$template = (document.getElementById(this.tagName) as HTMLTemplateElement)?.content;
-    if (this.$template) {
-      this.debug('Attaching Template to ShadowRoot');
-      this.$root.appendChild(this.$template.cloneNode(true));
-    }
-    if (hasValue(options?.state)) {
-      this.updateState(options?.state as State); // will auto-render when update is done
+
+    this.configureAttributesAndProperties(ElementalComponent.observedAttributes);
+    this.configureAttributesAndProperties(this.getAttributeNames());
+
+    this.id = this.getAttribute('id') ?? (options.id?.value || randomId());
+    this.tagName = ElementalComponentRegistry.generateTagNameFromClassName(className);
+
+    this.$template = this.setupTemplate(this.options?.templateId);
+
+    this.eventController = new DefaultEventController(this);
+    this.eventController.registerEventListeners(this.options?.eventHandlers || []);
+
+    if (hasValue(this.options?.state)) {
+      this.updateState(this.options?.state as State); // will auto-render when update is done
     } else {
-      this.renderComponent();
+      this.render();
     }
   }
 
@@ -98,7 +96,7 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
   }
 
   public set $state(state: State) {
-    this.updateState(state as State);
+    this.updateState(state);
   }
 
   public updateState(value: State) {
@@ -112,11 +110,22 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
   }
 
   public registerEventListeners(registrations: EventListenerRegistration[]) {
-    this.eventController.registerEventListeners(registrations);
+    if (!this.options?.eventHandlers) {
+      this.options.eventHandlers = [];
+    }
+    registrations.forEach(reg => {
+      if (!this.options?.eventHandlers?.includes(reg)) {
+        this.options?.eventHandlers?.push(reg);
+      }
+    });
+    this.eventController.registerEventListeners(this.options?.eventHandlers);
   }
 
   public deregisterEventListeners() {
     this.eventController.deregisterEventListeners();
+    if (this.options) {
+      this.options.eventHandlers = [];
+    }
   }
 
   public raiseEvent(name: string, options?: EventOptions): void;
@@ -146,14 +155,11 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
         opts = isCustomOrOptions;
       }
     }
-
     this.eventController.raiseEvent(name, isCustom, payload, opts);
   }
 
   protected connectedCallback() {
     this.debug('Connected');
-
-    // attach any event listener
     this.registerEventListeners(this.options?.eventHandlers || []);
   }
 
@@ -167,36 +173,65 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
   }
 
   protected attributeChangedCallback(name: string, oldVal: string | null, newVal: string | null) {
-    this.debug('Attribute Changed', name, '| Old Value |> |>', oldVal, '| New Value |> |>', newVal);
+    this.debug('Attribute Changed: ', name, '| Old Value = ', oldVal, '| New Value = ', newVal);
 
     if (!this.hasAttribute(name)) {
       this.debug('Attribute Removed', name);
 
       return;
     }
-
     // add the attribute [name] as the property of this class
     Object.assign(this, { [name]: newVal });
-
-    this.renderComponent();
+    this.render();
   }
 
-  protected abstract render(): string;
+  protected abstract render(): void;
 
-  private renderComponent(): void {
-    let html = this.render();
+  private configureAttributesAndProperties(attributes: string[]): void {
+    attributes.forEach(attribute => {
+      if (!this.hasAttribute(attribute)) {
+        this.setAttribute(attribute, '');
+      }
+      // add the attribute [name] as the property of this class
+      Object.assign(this, { [attribute]: undefined });
+    });
+  }
 
-    if (hasValue(html)) {
-      html = this.options?.sanitizer
-        ? this.options?.sanitizer(html, this.options?.sanitizerOptions)
-        : ElementalComponent.sanitize(html);
-      this.debug('Rendering Component', html);
-      this.$root.innerHTML = html;
+  private setupTemplate(templateId: string | undefined): HTMLTemplateElement {
+    let template: HTMLTemplateElement;
 
-      return;
+    const proto = Object.getPrototypeOf(this.constructor.prototype);
+    const parentElement = proto.constructor as Class<ElementalComponent>;
+    const parentTagName = ElementalComponentRegistry.registeredTagName(parentElement.name);
+    const tagName = ElementalComponentRegistry.generateTagNameFromClassName(this.constructor.name);
+
+    if (templateId) {
+      template = document.getElementById(templateId) as HTMLTemplateElement;
+
+      if (!template) {
+        throw new NoSuchTemplateFoundWithTheGivenIdException(templateId);
+      }
+    } else if (parentTagName) {
+      this.debug(`Component extends "${parentElement.name}"... checking template in parent`);
+
+      if (ElementalComponentRegistry.isTemplateRegistered(parentElement)) {
+        this.debug('Found a registered parent template');
+        template = document.getElementById(parentTagName) as HTMLTemplateElement;
+      } else {
+        this.debug('Checking any registered child template');
+        template = document.getElementById(tagName) as HTMLTemplateElement;
+      }
+    } else {
+      this.debug('Checking any registered template');
+      template = document.getElementById(tagName) as HTMLTemplateElement;
     }
 
-    throw new UnableToRenderElementalComponentException(this.constructor.name);
+    if (template) {
+      this.debug('Template found... cloning template to $root node');
+      this.$root.appendChild(template.content.cloneNode(true));
+    }
+
+    return template;
   }
 
   private debug(message?: string, ...optionalParams: unknown[]) {

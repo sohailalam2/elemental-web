@@ -45,14 +45,9 @@ export interface ElementalComponentOptions {
   eventHandlers?: EventListenerRegistration[];
 
   /**
-   * Elemental Web uses `sanitize-html` to sanitize the produced html before rendering it to DOM.
-   * One can optionally override it using this option
+   * The ID of the template that should be used as a template for this component
    *
-   * @param html The dirty html
-   * @param options Any configuration options passed to the sanitizer
-   * @return the sanitized html
-   * @link https://github.com/apostrophecms/sanitize-html
+   * This option allows us to reuse existing templates
    */
-  sanitizer?: (html: string, options: unknown) => string;
-  sanitizerOptions?: unknown;
+  templateId?: string;
 }

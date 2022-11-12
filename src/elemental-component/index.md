@@ -19,13 +19,14 @@ Use the fundamental technologies that you are already familiar with to build for
 ```ts
 abstract class ElementalComponent<State = string> extends HTMLElement implements EventController {
   // child classes must override the render method
-  protected abstract render(): string;
+  protected abstract render(): void;
 }
 ```
 
 `ElementalComponent` is an abstract class and all your component classes must extend it to get the Power! 👊
-The only hard requirement is to override the `render()` method that should return a non-empty string, ideally
-some HTML tags that gets rendered on the DOM.
+The only hard requirement is to override the `render()` method which should handle how the DOM gets rendered.
+
+It is left upto the developer to decide how they want to render the DOM.
 
 ## Usage
 
@@ -34,14 +35,14 @@ import { hasValue } from '@sohailalam2/abu';
 import { ElementalComponent } from '@sohailalam2/elemental-web';
 
 export class ButtonCounter extends ElementalComponent<number> {
-  connectedCallback() {
+  protected connectedCallback() {
     super.connectedCallback();
     this.registerEventListeners([{ name: 'click', handler: this.onClick }]);
   }
 
   // Render the element's HTML content
-  render() {
-    return `<button>Click Me (${this.$state})</button>`;
+  protected render() {
+    this.$root.innerHTML = `<button>Click Me (${this.$state})</button>`;
   }
 
   // NOTE: its a regular private method that is being used as an event handler
@@ -112,18 +113,6 @@ interface ElementalComponentOptions {
    * Read more in the Controller section of the guide.
    */
   eventHandlers?: EventListenerRegistration[];
-
-  /**
-   * Elemental Web uses `sanitize-html` to sanitize the produced html before
-   * rendering it to DOM. One can optionally override it using this option
-   *
-   * @param html The dirty html
-   * @param options Any configuration options passed to the sanitizer
-   * @return the sanitized html
-   * @link https://github.com/apostrophecms/sanitize-html
-   */
-  sanitizer?: (html: string, options: unknown) => string;
-  sanitizerOptions?: unknown;
 }
 ```
 
@@ -156,6 +145,16 @@ ElementalComponent.register(ButtonCounter);
 ElementalComponent.register(ButtonCounter, {
   prefix: ElementalComponentPrefix.from('awesome'),
 });
+```
+
+#### Configure a default custom prefix
+
+By default, ElementalComponent uses `el` as the default prefix. You can optionally change this to
+your liking as shows below. Once the default prefix is changed, any further components being registered
+will use the new default prefix without you having to explicitly pass it during the registration process.
+
+```ts
+ElementalComponentRegistry.setDefaultPrefix(ElementalComponentPrefix.from('my'));
 ```
 
 ## Template Registration
@@ -197,7 +196,7 @@ instance property `$template`.
 An `ElementalComponent` once registered is ready for use and can be instantiated in two ways:
 
 - By using it as an HTML tag in a document
-- By programmatically by using `document.createElement()` API
+- By programmatically for instance by using `document.createElement()` API
 
 ### Instantiate using its Tag Name
 
@@ -226,19 +225,17 @@ class MyComponent extends ElementalComponent {
   }
 
   render(): string {
-    // If a template was registered
-    if (this.$template) {
-      const p = this.$root.querySelector('p');
-
-      if (p) {
-        p.textContent = this.$state;
-      }
-
-      return this.$root.innerHTML;
+    if (!this.$template) {
+      this.$root.innerHTML = `<p>${this.$state}</p>`;
+      return;
     }
 
-    // else render the following
-    return `<p>${this.$state}</p>`;
+    // If a template was registered then do this
+    const p = this.$root.querySelector('p');
+
+    if (p) {
+      p.textContent = this.$state;
+    }
   }
 }
 
@@ -257,6 +254,59 @@ document.body.appendChild(component);
 Every instance of an `ElementalComponent` can have direct access to its DOM root using
 the `this.$root` readonly instance property.
 :::
+
+### Attributes and Properties
+
+When a new attribute is added to the component, ElementalComponent automatically exposes the attribute
+as a class property and if that attribute is made observable, then the attribute and property will
+be kept in sync.
+
+#### Example
+
+In the following example, note that there are three attributes used in the HTML code.
+`id`, `name`, and `superpower`. Only `superpower` attribute is made an observable.
+
+When the `superpower` attribute change is detected, the corresponding class property `this.superpower`
+also gets updated.
+
+```html
+<!-- somewhere in index.html -->
+
+<el-hero id="one" name="Superman" superpower="Laser Eyes"></el-hero>
+```
+
+```ts
+class Hero extends ElementalComponent {
+  // IMPORTANT!
+  // This is the way to make attributes observable
+  static get observedAttributes() {
+    return ['superpower'];
+  }
+
+  private name = 'Unknown';
+
+  private superpower = 'Unknown';
+
+  protected render() {
+    this.$root.innerHTML = `<p>I am ${this.name} and I have ${this.superpower}</p>`;
+  }
+
+  protected connectedCallback() {
+    super.connectedCallback();
+
+    setTimeout(() => {
+      // IMPORTANT!
+      // The only way how an attribute change is fired, is when we call the setAttribute method
+      this.setAttribute('superpower', 'XRay Vision');
+
+      // NWRONG WAY!!
+      // This will NOT fire a change event hence the DOM will not be refreshed and
+      // the attribute will not be in sync with the property value
+      this.superpower = 'Super Hearing';
+    }, 2000);
+  }
+}
+```
 
 ## Lifecycle Hooks
 
@@ -341,7 +391,7 @@ class ButtonCounter extends ElementalComponent {
   }
 
   render() {
-    return `<button>Click Me</button>`;
+    this.$root.innerHTML = `<button>Click Me</button>`;
   }
 
   onClick() {
@@ -360,7 +410,7 @@ class ButtonCounter extends ElementalComponent {
   }
 
   render() {
-    return `<button>Click Me</button>`;
+    this.$root.innerHTML = `<button>Click Me</button>`;
   }
 
   // 👇 The name must match
@@ -377,12 +427,217 @@ and the `disconnectedCallback()` is invoked.
 
 ## Raise Events
 
+You can raise events from the component as follows:
+
 ```ts
 // raise a CustomEvent named `button-clicked` and with a string payload
-this.raiseEvent('button-clicked', true, `You have clicked my button ${count} times`);
+this.raiseEvent(
+  'button-clicked', // event name
+  true, // isCustomEvent
+  `You have clicked my button ${count} times`, // payload
+);
 ```
 
-## Full Example
+## Example with Inheritance
+
+In this example, we can see that the `HeroSidekick` component not only inherits
+most of the functionalities from `Hero` component but also adds its own flavor.
+
+Notice how `Hero` component uses a complex data as `state`.
+
+![Screenshot](docs/assets/example-with-inheritance.png)
+
+### Components Definition (typescript)
+
+```ts
+/* eslint-disable no-magic-numbers */
+import { deserialize, randomHex, serialize } from '@sohailalam2/abu';
+import { ElementalComponent, ElementalComponentPrefix, ElementalComponentRegistry } from '@/elemental-component';
+
+import styles from './styles.css?inline';
+import template from './template.html?raw';
+
+interface HeroMessage {
+  name: string;
+  message: string;
+}
+
+class Hero extends ElementalComponent<HeroMessage> {
+  // make name and tagline as observables
+  // don't forget to also observe changes to the state attribute too
+  static get observedAttributes() {
+    return ['name', 'tagline', 'state'];
+  }
+
+  // declare the properties
+  // no need to delcare `state` property as ElementalComponent
+  // takes care of that and exposes it as `$state`
+  private name = '';
+
+  private tagline = '';
+
+  protected connectedCallback() {
+    super.connectedCallback();
+
+    this.registerEventListeners([
+      {
+        name: 'click',
+        handler: this.onButtonClickHandler,
+        attachTo: this.$root.querySelector('button') as HTMLButtonElement,
+      },
+      {
+        name: 'UpdateText',
+        handler: this.onUpdateTextHandler,
+        isCustomEvent: true,
+      },
+    ]);
+
+    // Remember to update attributes/properties by calling this.setAttribute()
+    setTimeout(() => {
+      if (!this.name) {
+        this.setAttribute('name', 'Cat Woman🐱');
+      }
+    }, 2000);
+  }
+
+  protected render() {
+    const style = this.$root.querySelector('style');
+    const name = this.$root.querySelector('.name') as HTMLParagraphElement;
+    const tagline = this.$root.querySelector('.tagline') as HTMLParagraphElement;
+    const secret = this.$root.querySelector('.secret') as HTMLParagraphElement;
+
+    if (style) {
+      style.textContent = styles;
+    }
+
+    name.textContent = `I am ${this.name}`;
+    tagline.textContent = this.tagline;
+
+    if (this.$state) {
+      secret.textContent = `
+        ${this.$state.name} send a secret message.
+        ${this.$state.message}
+      `;
+    }
+  }
+
+  protected onButtonClickHandler(e: Event) {
+    e.preventDefault();
+
+    this.raiseEvent(
+      'UpdateText',
+      true,
+      serialize({
+        name: this.name,
+        message: `secret code #${randomHex()}`,
+      }),
+    );
+  }
+
+  protected onUpdateTextHandler(e: Event): void {
+    const msg: HeroMessage = deserialize((e as CustomEvent).detail);
+
+    if (msg.name !== this.name) {
+      this.updateState(msg);
+    }
+  }
+}
+
+class HeroSidekick extends Hero {
+  protected connectedCallback() {
+    super.connectedCallback();
+    const tagline = this.$root.querySelector('.tagline') as HTMLParagraphElement;
+
+    tagline.classList.add('sidekick-tagline');
+  }
+}
+
+ElementalComponentRegistry.setDefaultPrefix(ElementalComponentPrefix.from('my'));
+
+ElementalComponent.registerTemplate(Hero, template);
+
+ElementalComponent.register(Hero);
+ElementalComponent.register(HeroSidekick);
+```
+
+### Components Definition (css)
+
+```css
+:host {
+  margin: 0;
+  padding: 0;
+  color: black;
+  font-weight: 400;
+}
+
+button {
+  border: none;
+  border-radius: 5px;
+  padding: 10px 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background-color: black;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.sidekick-tagline {
+  color: crimson;
+  font-size: 1.5rem;
+}
+
+.name {
+  font-size: 2.5rem;
+  font-weight: 800;
+}
+
+.tagline {
+  font-size: 1.75rem;
+}
+
+.secret {
+  font-size: 1.2rem;
+  color: #888888;
+}
+```
+
+### Components Template (html)
+
+```html
+<style></style>
+
+<section>
+  <p class="name"></p>
+  <p class="tagline"></p>
+  <p class="secret"></p>
+  <button>Send Message</button>
+</section>
+```
+
+### Usage of the above components
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Elemental Web</title>
+  </head>
+  <body>
+    <my-hero id="one" name="Batman🦇" tagline="The protector of Gotham!"> </my-hero>
+
+    <my-hero-sidekick class="flex-item" name="Robin🐦" tagline="I was lost, but now I am found."> </my-hero-sidekick>
+
+    <my-hero-sidekick class="flex-item" tagline="I ❤ Batman"> </my-hero-sidekick>
+
+    <script type="module" src="./src"></script>
+  </body>
+</html>
+```
+
+## Another Example
 
 The following is a full example showcasing how to use ElementalComponent and its various features
 
@@ -477,9 +732,9 @@ export class Navbar extends ElementalComponent<NavBarMenu> {
     });
   }
 
-  render(): string {
+  render() {
     if (!this.$template) {
-      return `<p>No Template Found for Navbar</p>`;
+      this.$root.innerHTML = `<p>No Template Found for Navbar</p>`;
     }
 
     const style = this.$root.querySelector('style');
@@ -493,8 +748,6 @@ export class Navbar extends ElementalComponent<NavBarMenu> {
 
     (this.$state?.start ?? []).forEach(menu => this.appendItem(menu, start));
     (this.$state?.end ?? []).forEach(menu => this.appendItem(menu, end));
-
-    return this.$root.innerHTML;
   }
 
   private appendItem(item: NavbarItemData, position: Element) {

@@ -45,4 +45,4 @@ Object.defineProperty(globalThis, 'crypto', {
 
 Debug logs can be enabled by globally exposing a truthy value for `__ABU_DEBUG__`
 
-## 🌏 [Read Documentation](https://sohailalam2.github.io/abu/)
+## 🌏 [Read Documentation](https://sohailalam2.github.io/elemental-web/)

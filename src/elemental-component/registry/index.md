@@ -8,6 +8,17 @@ The `ElementalComponentRegistry` uses the text `el` _(stands for elemental)_ as 
 for all purposes.
 :::
 
+## Changing the default prefix
+
+By default, ElementalComponent will register components with a prefix `el` however, this can be changed by
+using the following method:
+
+```ts
+ElementalComponentRegistry.setDefaultPrefix(
+  ElementalComponentPrefix.from('my'), // prefix will now become `my-`
+);
+```
+
 ## Register a Component
 
 All custom elements MUST be registered before they can be instantiated, not doing so will result in an
