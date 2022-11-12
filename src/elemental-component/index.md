@@ -185,11 +185,42 @@ ElementalComponent.registerTemplate(
 );
 ```
 
+#### Registering a component and a template together
+
+```ts
+const template = `<button>MyButton</button>`;
+
+ElementalComponent.register(ButtonCounter, { template });
+```
+
 ::: tip 💁 `this.$template`
 If a template is registered or is autodetected by `ElementalComponent` during the
 component instantiation, then its content will be made available via the readonly
 instance property `$template`.
 :::
+
+#### Link a different template
+
+Let's say we already have a template registered in the DOM with an id of `custom-template`.
+If we choose to create an element that uses this existing template instead of creating (or registering)
+a new template, then we can simply pass the `templateId` during the instantiation of
+the component and at runtime, the component will use the given template.
+
+If no such template is found, an `ElementalComponentNoSuchTemplateFoundException` will be thrown.
+
+::: warning It's a reference not a copy
+If a `templateId` is provided and a template with such an id already exists, then the
+component will try to directly use the content of the given template instead of copying and creating
+its own template first.
+:::
+
+```ts
+const template = `<button>MyButton</button>`;
+
+ElementalComponent.register(ButtonCounter);
+
+const myButton = new ButtonCounter({ templateId: custom - template });
+```
 
 ## Instantiate a Component
 
@@ -436,353 +467,4 @@ this.raiseEvent(
   true, // isCustomEvent
   `You have clicked my button ${count} times`, // payload
 );
-```
-
-## Example with Inheritance
-
-In this example, we can see that the `HeroSidekick` component not only inherits
-most of the functionalities from `Hero` component but also adds its own flavor.
-
-Notice how `Hero` component uses a complex data as `state`.
-
-![Screenshot](docs/assets/example-with-inheritance.png)
-
-### Components Definition (typescript)
-
-```ts
-/* eslint-disable no-magic-numbers */
-import { deserialize, randomHex, serialize } from '@sohailalam2/abu';
-import { ElementalComponent, ElementalComponentPrefix, ElementalComponentRegistry } from '@/elemental-component';
-
-import styles from './styles.css?inline';
-import template from './template.html?raw';
-
-interface HeroMessage {
-  name: string;
-  message: string;
-}
-
-class Hero extends ElementalComponent<HeroMessage> {
-  // make name and tagline as observables
-  // don't forget to also observe changes to the state attribute too
-  static get observedAttributes() {
-    return ['name', 'tagline', 'state'];
-  }
-
-  // declare the properties
-  // no need to delcare `state` property as ElementalComponent
-  // takes care of that and exposes it as `$state`
-  private name = '';
-
-  private tagline = '';
-
-  protected connectedCallback() {
-    super.connectedCallback();
-
-    this.registerEventListeners([
-      {
-        name: 'click',
-        handler: this.onButtonClickHandler,
-        attachTo: this.$root.querySelector('button') as HTMLButtonElement,
-      },
-      {
-        name: 'UpdateText',
-        handler: this.onUpdateTextHandler,
-        isCustomEvent: true,
-      },
-    ]);
-
-    // Remember to update attributes/properties by calling this.setAttribute()
-    setTimeout(() => {
-      if (!this.name) {
-        this.setAttribute('name', 'Cat Woman🐱');
-      }
-    }, 2000);
-  }
-
-  protected render() {
-    const style = this.$root.querySelector('style');
-    const name = this.$root.querySelector('.name') as HTMLParagraphElement;
-    const tagline = this.$root.querySelector('.tagline') as HTMLParagraphElement;
-    const secret = this.$root.querySelector('.secret') as HTMLParagraphElement;
-
-    if (style) {
-      style.textContent = styles;
-    }
-
-    name.textContent = `I am ${this.name}`;
-    tagline.textContent = this.tagline;
-
-    if (this.$state) {
-      secret.textContent = `
-        ${this.$state.name} send a secret message.
-        ${this.$state.message}
-      `;
-    }
-  }
-
-  protected onButtonClickHandler(e: Event) {
-    e.preventDefault();
-
-    this.raiseEvent(
-      'UpdateText',
-      true,
-      serialize({
-        name: this.name,
-        message: `secret code #${randomHex()}`,
-      }),
-    );
-  }
-
-  protected onUpdateTextHandler(e: Event): void {
-    const msg: HeroMessage = deserialize((e as CustomEvent).detail);
-
-    if (msg.name !== this.name) {
-      this.updateState(msg);
-    }
-  }
-}
-
-class HeroSidekick extends Hero {
-  protected connectedCallback() {
-    super.connectedCallback();
-    const tagline = this.$root.querySelector('.tagline') as HTMLParagraphElement;
-
-    tagline.classList.add('sidekick-tagline');
-  }
-}
-
-ElementalComponentRegistry.setDefaultPrefix(ElementalComponentPrefix.from('my'));
-
-ElementalComponent.registerTemplate(Hero, template);
-
-ElementalComponent.register(Hero);
-ElementalComponent.register(HeroSidekick);
-```
-
-### Components Definition (css)
-
-```css
-:host {
-  margin: 0;
-  padding: 0;
-  color: black;
-  font-weight: 400;
-}
-
-button {
-  border: none;
-  border-radius: 5px;
-  padding: 10px 25px;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #fff;
-  background-color: black;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-.sidekick-tagline {
-  color: crimson;
-  font-size: 1.5rem;
-}
-
-.name {
-  font-size: 2.5rem;
-  font-weight: 800;
-}
-
-.tagline {
-  font-size: 1.75rem;
-}
-
-.secret {
-  font-size: 1.2rem;
-  color: #888888;
-}
-```
-
-### Components Template (html)
-
-```html
-<style></style>
-
-<section>
-  <p class="name"></p>
-  <p class="tagline"></p>
-  <p class="secret"></p>
-  <button>Send Message</button>
-</section>
-```
-
-### Usage of the above components
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Elemental Web</title>
-  </head>
-  <body>
-    <my-hero id="one" name="Batman🦇" tagline="The protector of Gotham!"> </my-hero>
-
-    <my-hero-sidekick class="flex-item" name="Robin🐦" tagline="I was lost, but now I am found."> </my-hero-sidekick>
-
-    <my-hero-sidekick class="flex-item" tagline="I ❤ Batman"> </my-hero-sidekick>
-
-    <script type="module" src="./src"></script>
-  </body>
-</html>
-```
-
-## Another Example
-
-The following is a full example showcasing how to use ElementalComponent and its various features
-
-The example uses the following technologies to make life easier, but of course `ElementalComponent` can be used without
-any of these
-
-- [Abu](https://sohailalam2.github.io/abu/) for some helpers such as creation of `ValueObject`
-- [Vite](https://vitejs.dev) as a build tool... create a project with typescript support
-- [Bulma CSS](https://bulma.io) for some nice css effects
-- Support for Typescript
-- Support for SCSS / CSS
-
-```html
-<!-- template.html -->
-
-<style media="screen"></style>
-<nav class="navbar is-info is-fixed-top" role="navigation" aria-label="main navigation">
-  <div class="navbar-brand">
-    <a class="navbar-item" href="https://github.com/sohailalam2/elemental-web">
-      <img src="/src/assets/img/logo.png" alt="brand logo" />
-    </a>
-    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="main-navbar">
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
-    </a>
-  </div>
-  <div id="main-navbar" class="navbar-menu">
-    <div class="navbar-start"></div>
-    <div class="navbar-end"></div>
-  </div>
-</nav>
-```
-
-```scss
-// styles.scss
-
-@import 'bulma/sass/utilities/controls';
-@import 'bulma/sass/utilities/extends';
-@import 'bulma/sass/utilities/initial-variables';
-@import 'bulma/sass/base/minireset';
-@import 'bulma/sass/components/navbar';
-
-a {
-  text-decoration: none;
-}
-```
-
-```ts
-// Navbar.ts
-
-import { Exception, ValueObject, toKebabCase, randomId } from '@sohailalam2/abu';
-import { ElementalComponent } from '@sohailalam2/elemental-web';
-
-import styles from './styles.scss?inline';
-import template from './template.html?raw';
-
-export class NavbarItemDataCanNotBeThisLarge extends Exception {}
-
-export class NavbarItemData extends ValueObject {
-  validate() {
-    super.validate();
-    const MAX_LENGTH = 15;
-
-    if (this.value.length > MAX_LENGTH) {
-      throw new NavbarItemDataCanNotBeThisLarge();
-    }
-  }
-}
-
-export interface NavBarMenu {
-  start: NavbarItemData[];
-  end: NavbarItemData[];
-}
-
-export class NavbarTemplateIsInvalidException extends Exception {}
-
-export class Navbar extends ElementalComponent<NavBarMenu> {
-  connectedCallback() {
-    super.connectedCallback();
-    // attach click handler to all navbar items individually
-    this.$root.querySelectorAll('.navbar-item').forEach((el: HTMLElement) => {
-      // 💡 Note how we are registering click hander for the anchor
-      // element and NOT to the Navbar custom element
-      this.registerEventListeners([
-        {
-          name: 'click',
-          handler: this.onItemClickHandler,
-          attachTo: el,
-        },
-      ]);
-    });
-  }
-
-  render() {
-    if (!this.$template) {
-      this.$root.innerHTML = `<p>No Template Found for Navbar</p>`;
-    }
-
-    const style = this.$root.querySelector('style');
-    const start = this.$root.querySelector('.navbar-start');
-    const end = this.$root.querySelector('.navbar-end');
-
-    if (!style || !start || !end) {
-      throw new NavbarTemplateIsInvalidException();
-    }
-    style.textContent = styles;
-
-    (this.$state?.start ?? []).forEach(menu => this.appendItem(menu, start));
-    (this.$state?.end ?? []).forEach(menu => this.appendItem(menu, end));
-  }
-
-  private appendItem(item: NavbarItemData, position: Element) {
-    const a = document.createElement('a');
-
-    a.id = randomId();
-    a.className = 'navbar-item';
-    a.textContent = item.value;
-    a.href = toKebabCase(item.value);
-
-    position.appendChild(a);
-  }
-
-  private onItemClickHandler(e: Event): void {
-    e.preventDefault();
-    alert((e.target as HTMLAnchorElement).href);
-  }
-}
-
-ElementalComponent.register(Navbar);
-ElementalComponent.registerTemplate(Navbar, template);
-```
-
-```ts
-// index.ts
-
-import { NavbarItemData, Navbar, NavBarMenu } from './Navbar';
-
-const menu: NavBarMenu = {
-  start: [NavbarItemData.from('Batman'), NavbarItemData.from('Spiderman'), NavbarItemData.from('Superman')],
-  end: [NavbarItemData.from('Shaktiman')],
-};
-
-export const navbar = new Navbar({ state: menu });
-
-//👌 add the custom element to the document body to render
-document.body.prepend(navbar);
 ```

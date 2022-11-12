@@ -65,6 +65,35 @@ Not so surprising is that you can use the `register()` method to register _any_ 
 restricted to using `ElementalComponent` and you will still benefit from its usage :)
 :::
 
+#### Registering a component and a template together
+
+```ts
+const template = `<button>MyButton</button>`;
+
+ElementalComponentRegistry.register(ButtonCounter, { template });
+```
+
+#### Copying an existing template while registering a component
+
+Let's say we already have a template registered in the DOM with an id of `custom-template`.
+If we choose to create an element that uses this existing template instead,
+then we can simply pass the `templateId` during the registration of
+the component and its content will be copied into a new template.
+
+If no such template is found, an `ElementalComponentNoSuchTemplateFoundException` will be thrown.
+
+```ts
+const template = `<button>MyButton</button>`;
+
+ElementalComponentRegistry.register(ButtonCounter, { templateId: custom - template });
+```
+
+::: warning It's a copy not a reference
+If a `templateId` is provided and a template with such an id already exists, then the
+registry will try to copy its content into a new template element which will then be
+registered for the given component.
+:::
+
 ## Check if component is registered
 
 `ElementalComponentRegistry` exposes the following helper methods to check whether a component has been registered or

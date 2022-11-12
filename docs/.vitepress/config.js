@@ -55,7 +55,7 @@ function readDirAndConvertName(dirPath) {
 
       let children = readDirAndConvertName(join(dirPath, name));
 
-      if (children.length) {
+      if (children.length && name !== 'examples') {
         children = children.map(child => {
           child.link = `${link}${child.link}`;
 

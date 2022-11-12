@@ -12,6 +12,8 @@ export class ElementalComponentTemplateCanNotBeEmptyException extends Exception 
 
 export class ElementalComponentTemplateIsAlreadyRegistered extends Exception {}
 
+export class ElementalComponentNoSuchTemplateFoundException extends Exception {}
+
 export class ElementalComponentRegistry {
   // map(class-name => tag-name)
   private static readonly COMPONENT_REGISTRY: Map<string, string> = new Map();
@@ -51,6 +53,20 @@ export class ElementalComponentRegistry {
     }
 
     debug(`[elemental-component] Registering Component "${tagName}"`);
+
+    let template: string | undefined = options?.template;
+
+    if (options?.templateId) {
+      template = (document.getElementById(options.templateId) as HTMLTemplateElement)?.innerHTML;
+
+      if (!template) {
+        throw new ElementalComponentNoSuchTemplateFoundException(options.templateId);
+      }
+    }
+
+    if (template) {
+      ElementalComponentRegistry.registerTemplate(element, template, options?.prefix);
+    }
 
     // Register the component... the order is important here
     // 1. > Register in ElementalComponentRegistry

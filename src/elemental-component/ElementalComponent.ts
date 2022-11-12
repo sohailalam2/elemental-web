@@ -1,4 +1,4 @@
-import { Class, debug, deserialize, Exception, hasValue, randomId, serialize } from '@sohailalam2/abu';
+import { Class, debug, deserialize, hasValue, randomId, serialize } from '@sohailalam2/abu';
 
 import { ElementalComponentOptions } from './types';
 import { ElementalComponentPrefix } from './values';
@@ -6,10 +6,9 @@ import {
   RegistrationOptions,
   ElementalComponentRegistry,
   ElementalComponentIsNotRegisteredException,
+  ElementalComponentNoSuchTemplateFoundException,
 } from './registry';
 import { DefaultEventController, EventController, EventListenerRegistration, EventOptions } from './controller';
-
-export class NoSuchTemplateFoundWithTheGivenIdException extends Exception {}
 
 /**
  * ElementalComponent Class
@@ -209,7 +208,7 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
       template = document.getElementById(templateId) as HTMLTemplateElement;
 
       if (!template) {
-        throw new NoSuchTemplateFoundWithTheGivenIdException(templateId);
+        throw new ElementalComponentNoSuchTemplateFoundException(templateId);
       }
     } else if (parentTagName) {
       this.debug(`Component extends "${parentElement.name}"... checking template in parent`);

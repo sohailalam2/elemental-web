@@ -1,6 +1,73 @@
+# Example with Inheritance
+
+In this example, we can see that the `HeroSidekick` component not only inherits
+most of the functionalities from `Hero` component but also adds its own flavor.
+
+Notice how `Hero` component uses a complex data as `state`.
+
+![Screenshot](docs/assets/example-with-inheritance.png)
+
+## template.html
+
+```html
+<style></style>
+
+<section>
+  <p class="name"></p>
+  <p class="tagline"></p>
+  <p class="secret"></p>
+  <button>Send Message</button>
+</section>
+```
+
+## styles.css
+
+```css
+:host {
+  margin: 0;
+  padding: 0;
+  color: black;
+  font-weight: 400;
+}
+
+button {
+  border: none;
+  border-radius: 5px;
+  padding: 10px 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background-color: black;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.sidekick-tagline {
+  color: crimson;
+  font-size: 1.5rem;
+}
+
+.name {
+  font-size: 2.5rem;
+  font-weight: 800;
+}
+
+.tagline {
+  font-size: 1.75rem;
+}
+
+.secret {
+  font-size: 1.2rem;
+  color: #888888;
+}
+```
+
+## Hero.ts
+
+```ts
 /* eslint-disable no-magic-numbers */
 import { deserialize, randomHex, serialize } from '@sohailalam2/abu';
-import { ElementalComponent, ElementalComponentPrefix, ElementalComponentRegistry } from '@/elemental-component';
+import { ElementalComponent } from '@/elemental-component';
 
 import styles from './styles.css?inline';
 import template from './template.html?raw';
@@ -10,14 +77,14 @@ interface HeroMessage {
   message: string;
 }
 
-class Hero extends ElementalComponent<HeroMessage> {
+export class Hero extends ElementalComponent<HeroMessage> {
   static get observedAttributes() {
     return ['name', 'tagline', 'state'];
   }
 
-  private name = '';
+  name = '';
 
-  private tagline = '';
+  tagline = '';
 
   protected connectedCallback() {
     super.connectedCallback();
@@ -85,7 +152,17 @@ class Hero extends ElementalComponent<HeroMessage> {
   }
 }
 
-class HeroSidekick extends Hero {
+ElementalComponent.register(Hero, { template });
+```
+
+## HeroSidekick.ts
+
+```ts
+import { ElementalComponent } from '@/elemental-component';
+
+import { Hero } from './Hero';
+
+export class HeroSidekick extends Hero {
   protected connectedCallback() {
     super.connectedCallback();
     const tagline = this.$root.querySelector('.tagline') as HTMLParagraphElement;
@@ -94,9 +171,24 @@ class HeroSidekick extends Hero {
   }
 }
 
-ElementalComponentRegistry.setDefaultPrefix(ElementalComponentPrefix.from('my'));
-
-ElementalComponent.registerTemplate(Hero, template);
-
-ElementalComponent.register(Hero);
 ElementalComponent.register(HeroSidekick);
+```
+
+## index.ts
+
+```ts
+import './Hero';
+import './HeroSidekick';
+
+// 👌 add the custom element to the document body to render
+document.body.innerHTML += `
+<el-hero id="one" name="Batman🦇"
+                  tagline="The protector of Gotham!">
+</el-hero>
+<el-hero-sidekick name="Robin🐦"
+                  tagline="I was lost, but now I am found.">
+</el-hero-sidekick>
+<el-hero-sidekick tagline="I ❤ Batman">
+</el-hero-sidekick>
+`;
+```
