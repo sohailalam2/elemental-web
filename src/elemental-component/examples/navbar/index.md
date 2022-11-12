@@ -2,7 +2,7 @@
 
 In this example, we use a 3rd party CSS framework [Bulma](https://bulma.io)
 
-![Navbar Example](docs/assets/example-navbar.png)
+![Navbar Example](./assets/screenshot.png)
 
 ## template.html
 
@@ -11,7 +11,7 @@ In this example, we use a 3rd party CSS framework [Bulma](https://bulma.io)
 <nav class="navbar is-black is-fixed-top" role="navigation" aria-label="main navigation">
   <div class="navbar-brand">
     <a class="navbar-item" href="https://github.com/sohailalam2/elemental-web">
-      <img src="/docs/assets/navbar-logo.png" alt="brand logo" />
+      <img src="./assets/logo.png" alt="brand logo" />
     </a>
     <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="main-navbar">
       <span aria-hidden="true"></span>

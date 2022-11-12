@@ -11,14 +11,6 @@ any of these
 - Support for Typescript
 - Support for SCSS / CSS
 
-## Inheritance Example
-
-[![Screenshot](docs/assets/example-with-inheritance.png)](./inheritance/)
-
-## Navbar Example
-
-[![Navbar Example](docs/assets/example-navbar.png)](./navbar/)
-
 ## Setup
 
 ### index.html
@@ -36,3 +28,11 @@ any of these
   </body>
 </html>
 ```
+
+## Inheritance Example
+
+[![Inheritance Example Screenshot](./inheritance/assets/screenshot.png)](./inheritance/)
+
+## Navbar Example
+
+[![Navbar Example Screenshot](./navbar/assets/screenshot.png)](./navbar/)

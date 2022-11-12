@@ -5,7 +5,7 @@ most of the functionalities from `Hero` component but also adds its own flavor.
 
 Notice how `Hero` component uses a complex data as `state`.
 
-![Screenshot](docs/assets/example-with-inheritance.png)
+![Screenshot](./assets/screenshot.png)
 
 ## template.html
 
