@@ -1,6 +1,5 @@
-// / <reference types="vite/client" />
-
-/* eslint-disable no-underscore-dangle */
+/* eslint-disable no-underscore-dangle, spaced-comment */
+/// <reference types="vite/client" />
 
 declare const __LIB_NAME__: string;
 

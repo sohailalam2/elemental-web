@@ -1,0 +1,9 @@
+@import "node_modules/bulma/sass/utilities/controls";
+@import "node_modules/bulma/sass/utilities/extends";
+@import "node_modules/bulma/sass/utilities/initial-variables";
+@import "node_modules/bulma/sass/base/minireset";
+@import "node_modules/bulma/sass/components/navbar";
+
+a {
+  text-decoration: none;
+}

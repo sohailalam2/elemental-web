@@ -1,5 +1,5 @@
 import { debug, Exception, ValueObject, toKebabCase, randomId } from '@sohailalam2/abu';
-import { ElementalComponent, EventListenerRegistration } from '@/elemental-component';
+import { ElementalComponent, EventListenerRegistration } from '../../../src/elemental-component';
 
 import styles from './styles.scss?inline';
 import template from './template.html?raw';

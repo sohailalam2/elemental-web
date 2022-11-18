@@ -25,7 +25,11 @@ interface EventController {
     options?: EventOptions,
   ) => void;
 }
+```
 
+### Event Options
+
+```ts
 interface EventOptions {
   /**
    * A boolean value indicating whether the event bubbles.

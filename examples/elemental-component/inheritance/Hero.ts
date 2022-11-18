@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers */
 import { deserialize, randomHex, serialize } from '@sohailalam2/abu';
-import { ElementalComponent } from '@/elemental-component';
+import { ElementalComponent } from '../../../src/elemental-component';
 
 import styles from './styles.css?inline';
 import template from './template.html?raw';

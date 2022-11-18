@@ -1,8 +1,11 @@
 <section align="center">
   <br />
   <h1>Elemental Web</h1>
-  <h5>Modern web technologies in a nutshell</h5>
+  <h5>Modern web technologies in a nutshell 😍</h5>
+  <br />
 </section>
+
+# Getting Started
 
 ## 💻 Installation
 
@@ -10,7 +13,16 @@
 $ npm install @sohailalam2/elemental-web
 ```
 
+## Debug
+
+Debug logs can be enabled by globally exposing a truthy value for `__ABU_DEBUG__`
+
 ## ☝️ Minimum Requirements
+
+### Browsers
+
+- All modern browsers
+- NOT Internet Explorer
 
 ### NodeJs > v16
 
@@ -35,14 +47,3 @@ Object.defineProperty(globalThis, 'crypto', {
   value: { webcrypto: crypto.webcrypto },
 });
 ```
-
-### Browsers
-
-- All modern browsers
-- NOT Internet Explorer
-
-## Debug
-
-Debug logs can be enabled by globally exposing a truthy value for `__ABU_DEBUG__`
-
-## 🌏 [Read Documentation](https://sohailalam2.github.io/elemental-web/)

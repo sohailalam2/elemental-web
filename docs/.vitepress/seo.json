@@ -1,0 +1,17 @@
+{
+  "siteTitle": "Elemental Web",
+  "head": [
+    ["meta", { "name": "theme-color", "content": "#3c8772" }],
+    ["link", { "rel": "preconnect", "href": "https://fonts.gstatic.com", "crossorigin": "" }]
+  ],
+  "socialLinks": [
+    {
+      "link": "https://github.com/sohailalam2/elemental-web",
+      "icon": "github"
+    },
+    {
+      "link": "https://www.linkedin.com/in/alamsohail/",
+      "icon": "linkedin"
+    }
+  ]
+}

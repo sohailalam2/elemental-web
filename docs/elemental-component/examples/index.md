@@ -24,15 +24,15 @@ any of these
     <title>Elemental Web</title>
   </head>
   <body>
-    <script type="module" src="./src/elemental-component/examples"></script>
+    <script type="module" src="examples"></script>
   </body>
 </html>
 ```
 
 ## Inheritance Example
 
-[![Inheritance Example Screenshot](./inheritance/assets/screenshot.png)](./inheritance/)
+[![Inheritance Example Screenshot](../../assets/elemental-component/inheritance.png)](./inheritance.md)
 
 ## Navbar Example
 
-[![Navbar Example Screenshot](./navbar/assets/screenshot.png)](./navbar/)
+[![Navbar Example Screenshot](../../assets/elemental-component/navbar.png)](./navbar.md)

@@ -1,4 +1,4 @@
-import { ElementalComponent } from '@/elemental-component';
+import { ElementalComponent } from '../../../src/elemental-component';
 
 import { Hero } from './Hero';
 

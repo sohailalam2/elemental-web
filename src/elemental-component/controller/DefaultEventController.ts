@@ -70,12 +70,14 @@ export class DefaultEventController<T extends HTMLElement> implements EventContr
   }
 
   public raiseEvent<Payload = undefined>(name: string, isCustom?: boolean, payload?: Payload, options?: EventOptions) {
+    const defaultOptions: EventOptions = { bubbles: true, cancelable: true, composed: true };
+
     const event: Event = isCustom
       ? new CustomEvent(name, {
           detail: payload ? serialize(payload) : undefined,
-          ...{ bubbles: true, cancelable: true, ...(options ?? options) },
+          ...{ ...defaultOptions, ...(options ?? options) },
         })
-      : new Event(name, { bubbles: true, cancelable: true, composed: true, ...(options ?? options) });
+      : new Event(name, { ...defaultOptions, ...(options ?? options) });
 
     this.debug('Dispatching Event', event);
     this.component.dispatchEvent(event);
