@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.3](https://github.com/sohailalam2/elemental-web/compare/v0.1.2...v0.1.3) (2022-11-18)
+
+### Features
+
+- add support for complex value object state deserialization ([f3c6715](https://github.com/sohailalam2/elemental-web/commit/f3c671565ebfb18e40642d822a0ede46ed15ab54))
+
+### Bug Fixes
+
+- lint styles paths ([f6ad0d0](https://github.com/sohailalam2/elemental-web/commit/f6ad0d0ab9b3efa4d90f12c5f1558aa6c8508225))
+
 ### [0.1.2](https://github.com/sohailalam2/elemental-web/compare/v0.1.1...v0.1.2) (2022-11-14)
 
 ### [0.1.1](https://github.com/sohailalam2/elemental-web/compare/v0.1.0...v0.1.1) (2022-11-12)
