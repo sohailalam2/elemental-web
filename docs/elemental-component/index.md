@@ -117,3 +117,42 @@ export class ButtonCounter extends ElementalComponent<number> {
 // only after this it will be made available for instantiation
 ElementalComponent.register(ButtonCounter);
 ```
+
+## Using complex Value Object as State
+
+[Abu](https://github.com/sohailalam2/abu) provides [Value Object](https://sohailalam2.github.io/abu/data-helpers/value-object/index)
+that can be used as the `state` for the component.
+
+The only thing to remember is to provide a custom `deserialie()` implementation.
+
+```ts
+class MyValueObjectState extends ValueObject {}
+
+interface ComplexState {
+  vo: MyValueObjectState;
+}
+class ComplexStateVO extends ValueObject<ComplexState> {}
+
+class MyValueObjectStateComponent extends ElementalComponent<ComplexStateVO> {
+  protected deserialize(serializedState: string | undefined): ComplexStateVO {
+    if (!serializedState) {
+      return ComplexStateVO.from({ vo: MyValueObjectState.from('undefined') });
+    }
+
+    return ComplexStateVO.deserialize(serializedState, { vo: MyValueObjectState });
+  }
+
+  protected render(): void {
+    // do nothing
+  }
+}
+
+const state: ComplexStateVO = ComplexStateVO.from({ vo: MyValueObjectState.from(myComponentState) });
+
+ElementalComponent.register(MyValueObjectStateComponent);
+const div = document.createElement('div');
+const component = new MyValueObjectStateComponent({ state });
+
+div.appendChild(component);
+expect(component.$state).toEqual(state);
+```
