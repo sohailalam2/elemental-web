@@ -90,8 +90,12 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
     return ElementalComponentRegistry.generateTagName(element, prefix);
   }
 
+  protected deserialize(serializedState: string | undefined): State {
+    return deserialize<State>(serializedState || 'undefined');
+  }
+
   public get $state(): State {
-    return deserialize<State>(this.state || 'undefined');
+    return this.deserialize(this.state);
   }
 
   public set $state(state: State) {
@@ -105,7 +109,7 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
   }
 
   public cloneState(): State | undefined {
-    return deserialize(serialize(this.$state));
+    return this.deserialize(serialize(this.$state));
   }
 
   public registerEventListeners(registrations: EventListenerRegistration[]) {

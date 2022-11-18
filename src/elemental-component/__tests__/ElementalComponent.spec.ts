@@ -1,6 +1,6 @@
 /* eslint-disable  @typescript-eslint/ban-ts-comment, no-console, max-classes-per-file */
 import { beforeEach, describe, expect, it } from 'vitest';
-import { toKebabCase } from '@sohailalam2/abu';
+import { toKebabCase, ValueObject } from '@sohailalam2/abu';
 
 import { ElementalComponentOptions } from '../types';
 import { ElementalComponentIsNotRegisteredException } from '../registry';
@@ -191,5 +191,37 @@ describe('ElementalComponent', () => {
     expect(element.isConnected).toEqual(true);
     expect(element.innerHTML).toEqual('');
     expect(element.$root.innerHTML).toEqual(renderedHtml);
+  });
+
+  it('should maintain a complex value object as state', () => {
+    class MyValueObjectState extends ValueObject {}
+
+    interface ComplexState {
+      vo: MyValueObjectState;
+    }
+    class ComplexStateVO extends ValueObject<ComplexState> {}
+
+    class MyValueObjectStateComponent extends ElementalComponent<ComplexStateVO> {
+      protected deserialize(serializedState: string | undefined): ComplexStateVO {
+        if (!serializedState) {
+          return ComplexStateVO.from({ vo: MyValueObjectState.from('undefined') });
+        }
+
+        return ComplexStateVO.deserialize(serializedState, { vo: MyValueObjectState });
+      }
+
+      protected render(): void {
+        // do nothing
+      }
+    }
+
+    const state: ComplexStateVO = ComplexStateVO.from({ vo: MyValueObjectState.from(myComponentState) });
+
+    ElementalComponent.register(MyValueObjectStateComponent);
+    const div = document.createElement('div');
+    const component = new MyValueObjectStateComponent({ state });
+
+    div.appendChild(component);
+    expect(component.$state).toEqual(state);
   });
 });
