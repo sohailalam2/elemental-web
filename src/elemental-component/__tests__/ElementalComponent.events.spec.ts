@@ -1,4 +1,5 @@
 /* eslint-disable  @typescript-eslint/ban-ts-comment, no-console, max-classes-per-file, no-magic-numbers */
+/* eslint-disable  @typescript-eslint/no-unused-vars */
 import { describe, expect, it, vi } from 'vitest';
 
 import { ElementalComponentOptions } from '../types';
@@ -27,7 +28,7 @@ describe('ElementalComponent Events', () => {
         super({ eventHandlers: [{ name: 'click', handlerName: 'onClick' }] });
       }
 
-      onClick(e: Event): void {
+      onClick(_: Event): void {
         // do something
       }
     }
@@ -41,7 +42,7 @@ describe('ElementalComponent Events', () => {
 
   it('should register event listeners explicitly', () => {
     class MyComponentRegistersListenersExplicitly extends MyComponent {
-      onClick(e: Event): void {
+      onClick(_: Event): void {
         // do something
       }
     }
@@ -63,7 +64,7 @@ describe('ElementalComponent Events', () => {
         super({ eventHandlers: [{ name: 'click', handlerName: 'onClick' }] });
       }
 
-      onClick(e: Event): void {
+      onClick(_: Event): void {
         mock.call(vi);
       }
     }
@@ -84,7 +85,7 @@ describe('ElementalComponent Events', () => {
         super({ eventHandlers: [{ name: 'click', handlerName: 'onClick' }] });
       }
 
-      onClick(e: Event): void {
+      onClick(_: Event): void {
         mock.call(vi);
       }
     }
@@ -105,7 +106,7 @@ describe('ElementalComponent Events', () => {
         super({ eventHandlers: [{ name: 'click', handlerName: 'onClick' }] });
       }
 
-      onClick(e: Event): void {
+      onClick(_: Event): void {
         mock.call(vi);
       }
     }
@@ -126,7 +127,7 @@ describe('ElementalComponent Events', () => {
         super({ eventHandlers: [{ name: 'custom-event', isCustomEvent: true, handlerName: 'customHandler' }] });
       }
 
-      customHandler(e: Event): void {
+      customHandler(_: Event): void {
         mock.call(vi);
       }
     }
@@ -149,7 +150,7 @@ describe('ElementalComponent Events', () => {
         super({ eventHandlers: [{ name: 'custom-event', isCustomEvent: true, handlerName: 'customHandler' }] });
       }
 
-      customHandler(e: Event): void {
+      customHandler(_: Event): void {
         mock.call(vi);
       }
     }
