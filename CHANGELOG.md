@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.0](https://github.com/sohailalam2/elemental-web/compare/v0.1.5...v0.2.0) (2022-11-19)
+
+### Features
+
+- add style registration feature, refactor code ([3a39a2d](https://github.com/sohailalam2/elemental-web/commit/3a39a2d3c4bf8aadf07380f902898a4f859aa035))
+
 ### [0.1.5](https://github.com/sohailalam2/elemental-web/compare/v0.1.4...v0.1.5) (2022-11-19)
 
 ### Bug Fixes
