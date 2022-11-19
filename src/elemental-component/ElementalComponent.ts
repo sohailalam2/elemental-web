@@ -63,8 +63,6 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
 
     if (hasValue(this.options?.state)) {
       this.updateState(this.options?.state as State); // will auto-render when update is done
-    } else {
-      this.render();
     }
   }
 
@@ -159,7 +157,7 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
 
   protected connectedCallback() {
     this.debug('Connected');
-    this.registerEventListeners(this.options?.eventHandlers || []);
+    this.render();
   }
 
   protected disconnectedCallback() {
@@ -181,7 +179,9 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
     }
     // add the attribute [name] as the property of this class
     Object.assign(this, { [name]: newVal });
-    this.render();
+    if (this.isConnected) {
+      this.render();
+    }
   }
 
   protected abstract render(): void;

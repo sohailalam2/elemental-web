@@ -10,6 +10,9 @@ The abstract class `ElementalComponent` by defaults registers all event listener
 
 It is important that we register event listeners here, and unregister them in the disconnected callback.
 
+Once the component is connected, then the `render()` method will get called. This method simply exists so that
+you can cleanly organize all DOM rendering in one place.
+
 ```ts
 class MyComponent extends ElementalComponent {
   protected connectedCallback() {

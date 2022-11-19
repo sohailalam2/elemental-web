@@ -28,6 +28,9 @@ The only hard requirement is to override the `render()` method which should hand
 
 It is left upto the developer to decide how they want to render the DOM.
 
+Once the component is connected, the `render()` method will get called. This method simply exists so that
+you can cleanly organize all DOM rendering in one place.
+
 ## Elemental Component Options
 
 The `ElementalComponent` `super()` constructor can accept an optional `ElementalComponentOptions`.

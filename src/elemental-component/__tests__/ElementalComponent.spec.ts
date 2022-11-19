@@ -157,10 +157,12 @@ describe('ElementalComponent', () => {
   it('instance render method should render the correct dom', () => {
     class MyComponentRenderWorks extends MyComponent {}
     ElementalComponent.register(MyComponentRenderWorks);
-    const div = document.createElement('div');
     const component = new MyComponentRenderWorks();
 
-    div.appendChild(component);
+    document.body.appendChild(component);
+
+    expect(component.isConnected).toEqual(true);
+    expect(component.innerHTML).toEqual('');
     expect(component.$root.innerHTML).toEqual(`<span>Hello World!</span>`);
   });
 
