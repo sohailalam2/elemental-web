@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.5](https://github.com/sohailalam2/elemental-web/compare/v0.1.4...v0.1.5) (2022-11-19)
+
+### Bug Fixes
+
+- render only when component is connected ([25b625b](https://github.com/sohailalam2/elemental-web/commit/25b625bb892b54aeb37b27ed9f736d9d4ec260a3))
+
 ### [0.1.4](https://github.com/sohailalam2/elemental-web/compare/v0.1.3...v0.1.4) (2022-11-19)
 
 ### [0.1.3](https://github.com/sohailalam2/elemental-web/compare/v0.1.2...v0.1.3) (2022-11-18)
