@@ -18,6 +18,13 @@ class MyComponent extends ElementalComponent {
 }
 ```
 
+::: danger 👺 Use `isConnected`
+Be careful working with connectedCallback. It runs more often than you might realize,
+firing any time the element is moved and could even run after the node is no longer connected (strangely).
+
+You can use `this.isConnected` to know whether the element is connected or not.
+:::
+
 The abstract class `ElementalComponent` by defaults automatically unregisters all event listeners in this callback hook.
 
 It is important that we register event listeners in the connected callback, and unregister them here.

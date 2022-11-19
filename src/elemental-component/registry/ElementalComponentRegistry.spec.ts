@@ -1,4 +1,4 @@
-// eslint-disable-next-line max-classes-per-file
+/* eslint-disable max-classes-per-file, @typescript-eslint/ban-ts-comment */
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
@@ -33,6 +33,19 @@ describe('DefaultRegistry', () => {
 
     expect(tagName).toBeDefined();
     expect(tagName).toEqual(`el-${toKebabCase(MyElement.name)}`);
+  });
+
+  it('should generate tag name with updated default prefix', () => {
+    class MyElementWithCustomPrefix extends HTMLElement {}
+
+    ElementalComponentRegistry.setDefaultPrefix(ElementalComponentPrefix.from('my'));
+    const tagName = ElementalComponentRegistry.generateTagName(MyElementWithCustomPrefix);
+
+    expect(tagName).toBeDefined();
+    expect(tagName).toEqual(`my-${toKebabCase(MyElementWithCustomPrefix.name)}`);
+
+    // revert back
+    ElementalComponentRegistry.setDefaultPrefix(ElementalComponentPrefix.from('el'));
   });
 
   it('should generate tag name with a given prefix', () => {

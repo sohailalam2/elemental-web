@@ -53,7 +53,7 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
     this.configureAttributesAndProperties(ElementalComponent.observedAttributes);
     this.configureAttributesAndProperties(this.getAttributeNames());
 
-    this.id = this.getAttribute('id') ?? (options.id?.value || randomId());
+    this.id = this.getAttribute('id') || options.id?.value || randomId();
     this.tagName = ElementalComponentRegistry.generateTagNameFromClassName(className);
 
     this.$template = this.setupTemplate(this.options?.templateId);
@@ -96,10 +96,6 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
 
   public get $state(): State {
     return this.deserialize(this.state);
-  }
-
-  public set $state(state: State) {
-    this.updateState(state);
   }
 
   public updateState(value: State) {

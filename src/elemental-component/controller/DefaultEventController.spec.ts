@@ -65,6 +65,9 @@ describe('DefaultEventController', () => {
     controller.registerEventListeners(registrations);
     controller.raiseEvent('click');
 
+    // calling it multiple times should be fine
+    controller.registerEventListeners(registrations);
+
     // @ts-ignore
     expect(controller.eventListeners.size).toEqual(registrations.length);
     expect(spy).toHaveBeenCalledOnce();

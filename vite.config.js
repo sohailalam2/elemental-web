@@ -63,7 +63,7 @@ export default defineConfig(({ mode }) => {
         provider: 'istanbul',
         reporter: ['text', 'json', 'html'],
       },
-      environment: 'jsdom',
+      environment: 'happy-dom',
       includeSource: ['src/**/*.{js,ts}'],
     },
   };

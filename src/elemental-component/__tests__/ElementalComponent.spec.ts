@@ -1,16 +1,16 @@
 /* eslint-disable  @typescript-eslint/ban-ts-comment, no-console, max-classes-per-file */
 import { beforeEach, describe, expect, it } from 'vitest';
 import { toKebabCase, ValueObject } from '@sohailalam2/abu';
+import { ShadowRoot } from 'happy-dom';
 
 import { ElementalComponentOptions } from '../types';
-import { ElementalComponentIsNotRegisteredException } from '../registry';
 import { ElementalComponent } from '../ElementalComponent';
-
-import { ShadowRoot } from 'happy-dom';
+import { ElementalComponentId, ElementalComponentPrefix } from '../values';
 
 // we need to define webcrypto because Abu uses it to generate the random numbers
 // and this is not available in the simulated DOM test environment
 import crypto from 'crypto';
+
 Object.defineProperty(globalThis, 'crypto', { value: { webcrypto: crypto.webcrypto } });
 
 describe('ElementalComponent', () => {
@@ -42,17 +42,6 @@ describe('ElementalComponent', () => {
     templateContent = `<section><h1>Hello!!</h1><p></p></section>`;
   });
 
-  // @vitest-environment happy-dom
-
-  it('should throw ElementalComponentNotRegisteredException', () => {
-    class MyComponentNotRegistered extends MyComponent {}
-    // NOTE: unfortunately this test fails in jsdom due to its internal implementation so run it using happy-dom
-    // JS DOM throws a TypeError: Invalid constructor, possibly because it doesn't support extending html elements
-    expect(() => new MyComponentNotRegistered()).toThrow(ElementalComponentIsNotRegisteredException);
-  });
-
-  // @vitest-environment jsdom
-
   it('should return the correct observedAttributes', () => {
     class MyComponentObservedAttributes extends MyComponent {}
 
@@ -74,12 +63,27 @@ describe('ElementalComponent', () => {
     expect(MyComponentWithCustomObservedAttributes.observedAttributes).includes('count');
   });
 
+  it('should generate the correct tagName', () => {
+    class MyComponentTagName extends MyComponent {}
+
+    expect(ElementalComponent.tagName(MyComponentTagName)).toEqual('el-my-component-tag-name');
+  });
+
+  it('should generate the correct tagName with custom prefix', () => {
+    class MyComponentTagName extends MyComponent {}
+
+    expect(ElementalComponent.tagName(MyComponentTagName, ElementalComponentPrefix.from('awesome'))).toEqual(
+      'awesome-my-component-tag-name',
+    );
+  });
+
   it('instance should be defined', () => {
     class MyComponentDefined extends MyComponent {}
     ElementalComponent.register(MyComponentDefined);
     const component = new MyComponentDefined();
 
     expect(component).toBeDefined();
+    expect(component.id).toBeDefined();
   });
 
   it('instance should have $root defined when shadowdom is open', () => {
@@ -120,12 +124,17 @@ describe('ElementalComponent', () => {
     expect(component.constructor.name).toEqual(MyComponentName.name);
   });
 
-  it('instance should return the correct tagName', () => {
-    class MyComponentTagName extends MyComponent {}
+  it('instance should return the correct properties and attributes', () => {
+    class MyComponentTagName extends MyComponent {
+      constructor() {
+        super({ state: myComponentState, mode: 'open', id: ElementalComponentId.from('my-id') });
+      }
+    }
     ElementalComponent.register(MyComponentTagName);
     const component = new MyComponentTagName();
 
     expect(component.tagName).toEqual(`el-${toKebabCase(MyComponentTagName.name)}`);
+    expect(component.id).toEqual('my-id');
   });
 
   it('instance should have correct state type and value', () => {
