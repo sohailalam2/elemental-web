@@ -54,26 +54,13 @@ export class ElementalComponentRegistry {
 
     debug(`[elemental-component] Registering Component "${tagName}"`);
 
-    let template: string | undefined = options?.template;
-
-    if (options?.templateId) {
-      template = (document.getElementById(options.templateId) as HTMLTemplateElement)?.innerHTML;
-
-      if (!template) {
-        throw new ElementalComponentNoSuchTemplateFoundException(options.templateId);
-      }
-    }
-
-    if (template) {
-      ElementalComponentRegistry.registerTemplate(element, template, options?.prefix);
-    }
-
     // Register the component... the order is important here
-    // 1. > Register in ElementalComponentRegistry
+    // 1. > Register the template
+    ElementalComponentRegistry.registerTemplate(element, options);
+    // 2. > Register in ElementalComponentRegistry
     ElementalComponentRegistry.COMPONENT_REGISTRY.set(element.name, tagName);
-    // 2. > Register in customElements.define()
+    // 3. > Register in customElements.define()
     customElements.define(tagName, element, { extends: options?.extends ?? undefined });
-
     debug(`[elemental-component] Component Registration Complete "${tagName}"`);
   }
 
@@ -93,18 +80,25 @@ export class ElementalComponentRegistry {
     return !!customElements.get(tagName);
   }
 
-  public static registerTemplate(
-    element: Class<HTMLElement>,
-    template: string,
-    prefix?: ElementalComponentPrefix,
-  ): void {
-    const tagName = ElementalComponentRegistry.generateTagName(element, prefix);
-
-    if (ElementalComponentRegistry.isTemplateRegisteredByTagName(tagName)) {
-      throw new ElementalComponentTemplateIsAlreadyRegistered(tagName);
+  public static registerTemplate(element: Class<HTMLElement>, options?: RegistrationOptions): void {
+    if (options?.template === undefined && options?.templateId === undefined) {
+      return;
     }
 
+    const tagName = ElementalComponentRegistry.generateTagName(element, options?.prefix);
+
     debug(`[elemental-component] Registering Component Template "${tagName}"`);
+    let template: string | undefined = options?.template;
+
+    if (options?.templateId) {
+      template = (document.getElementById(options.templateId) as HTMLTemplateElement)?.innerHTML;
+
+      if (!template) {
+        throw new ElementalComponentNoSuchTemplateFoundException(options.templateId);
+      }
+    } else if (ElementalComponentRegistry.isTemplateRegisteredByTagName(tagName)) {
+      throw new ElementalComponentTemplateIsAlreadyRegistered(tagName);
+    }
 
     if (!hasValue(template)) {
       throw new ElementalComponentTemplateCanNotBeEmptyException(tagName);
@@ -114,9 +108,21 @@ export class ElementalComponentRegistry {
     const tmpl = document.createElement('template');
 
     tmpl.id = tagName;
-    tmpl.innerHTML = template;
+    tmpl.innerHTML = template as string;
 
     document.body.prepend(tmpl);
+
+    if (options?.styles) {
+      debug(`[elemental-component] Adding styles to template # "${tagName}"`);
+      let style = tmpl.content.querySelector('style') as HTMLStyleElement;
+
+      if (!style) {
+        style = document.createElement('style');
+        tmpl.content.prepend(style);
+      }
+
+      style.textContent = options.styles;
+    }
 
     debug(`[elemental-component] Component Template Registration Complete "${tagName}"`);
   }

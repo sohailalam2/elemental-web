@@ -70,13 +70,13 @@ describe('ElementalComponent Registration', () => {
     expect(new MyComponentWithTemplate().$root.innerHTML).toEqual(options.template);
   });
 
-  it('should not throw when template is empty but not register a template', () => {
+  it('should throw when template is empty', () => {
     class MyComponentWithEmptyTemplate extends MyComponent {}
     const options: RegistrationOptions = { template: '' };
 
-    expect(() => ElementalComponent.register(MyComponentWithEmptyTemplate, options)).not.toThrow();
-    // @ts-ignore
-    expect(new MyComponentWithEmptyTemplate().$template).toBeNull();
+    expect(() => ElementalComponent.register(MyComponentWithEmptyTemplate, options)).toThrow(
+      ElementalComponentTemplateCanNotBeEmptyException,
+    );
   });
 
   it('should throw an exception when template id is not found', () => {
@@ -143,22 +143,13 @@ describe('ElementalComponent Registration', () => {
 
     const template = `<p>Hello World</p>`;
 
-    ElementalComponent.registerTemplate(MyTemplateForComponent, template);
-    ElementalComponent.register(MyTemplateForComponent);
+    ElementalComponent.register(MyTemplateForComponent, { template });
 
     expect(ElementalComponentRegistry.isTemplateRegistered(MyTemplateForComponent)).toEqual(true);
     expect(ElementalComponentRegistry.isComponentRegistered(MyTemplateForComponent)).toEqual(true);
     // @ts-ignore
     expect(new MyTemplateForComponent().$template).toBeDefined();
     expect(new MyTemplateForComponent().$root.innerHTML).toEqual(template);
-  });
-
-  it('should throw when a template is empty for a component', () => {
-    class EmptyTemplateForComponent extends MyComponent {}
-
-    expect(() => ElementalComponent.registerTemplate(EmptyTemplateForComponent, '')).toThrow(
-      ElementalComponentTemplateCanNotBeEmptyException,
-    );
   });
 
   it('should register a component that extends a parent', () => {

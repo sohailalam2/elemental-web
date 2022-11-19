@@ -18,11 +18,7 @@ as the custom component's tag-name
 
 ```ts
 export class ElementalComponentRegistry {
-  public static registerTemplate(
-    element: Class<HTMLElement>,
-    template: string,
-    prefix?: ElementalComponentPrefix,
-  ): void {}
+  public static registerTemplate(element: Class<HTMLElement>, options?: RegistrationOptions): void {}
 }
 ```
 
@@ -34,7 +30,9 @@ export class ElementalComponentRegistry {
 // Here the given template string gets registered as a `ButtonCounter`
 // template with an id `el-button-counter`. You can see that in the beginning
 // of the document body as `<template id="el-button-counter">...</template>`
-ElementalComponentRegistry.registerTemplate(ButtonCounter, `<button>Click Me</button>`);
+ElementalComponentRegistry.registerTemplate(ButtonCounter, {
+  template: `<button>Click Me</button>`,
+});
 ```
 
 #### Registering with custom prefix
@@ -44,11 +42,10 @@ ElementalComponentRegistry.registerTemplate(ButtonCounter, `<button>Click Me</bu
 // template with an id `awesome-button-counter`.
 // You can see that in the beginning of the document body as
 // `<template id="awesome-button-counter">...</template>`
-ElementalComponentRegistry.registerTemplate(
-  ButtonCounter,
-  `<button>Click Me</button>`,
-  ElementalComponentPrefix.from('awesome'),
-);
+ElementalComponentRegistry.registerTemplate(ButtonCounter, {
+  template: `<button>Click Me</button>`,
+  prefix: ElementalComponentPrefix.from('awesome'),
+});
 ```
 
 ::: tip 💁 Register template for any `HTMLElement`
@@ -56,6 +53,34 @@ Not so surprising is that you can use the `registerTemplate()` method to registe
 _any_ `HTMLElement` and not necessarily restricted to using `ElementalComponent` and you will still benefit from its
 usage :D
 :::
+
+#### Copying an existing template while registering a component
+
+Let's say we already have a template registered in the DOM with an id of `custom-template`.
+If we choose to create an element that uses this existing template instead,
+then we can simply pass the `templateId` during the registration of
+the component and its content will be copied into a new template.
+
+If no such template is found, an `ElementalComponentNoSuchTemplateFoundException` will be thrown.
+
+```ts
+ElementalComponentRegistry.register(ButtonCounter, { templateId: `some-template-id` });
+```
+
+::: warning It's a copy not a reference
+If a `templateId` is provided and a template with such an id already exists, then the
+registry will try to copy its content into a new template element which will then be
+registered for the given component.
+:::
+
+#### Registering a component with a template and styles
+
+```ts
+const template = `<button>MyButton</button>`;
+const styles = `:host { padding: 0; margin: 0; }`;
+
+ElementalComponentRegistry.registerTemplate(ButtonCounter, { template, styles });
+```
 
 ## Check if template is registered
 

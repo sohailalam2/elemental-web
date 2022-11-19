@@ -53,7 +53,9 @@ ElementalComponentRegistry.setDefaultPrefix(ElementalComponentPrefix.from('my'))
 // Here the given template string gets registered as a `ButtonCounter`
 // template with an id `el-button-counter`. You can see that in the beginning
 // of the document body as `<template id="el-button-counter">...</template>`
-ElementalComponent.registerTemplate(ButtonCounter, `<button>Click Me</button>`);
+ElementalComponent.register(ButtonCounter, {
+  template: `<button>Click Me</button>`,
+});
 ```
 
 #### Registering with custom prefix
@@ -63,19 +65,10 @@ ElementalComponent.registerTemplate(ButtonCounter, `<button>Click Me</button>`);
 // template with an id `awesome-button-counter`.
 // You can see that in the beginning of the document body as
 // `<template id="awesome-button-counter">...</template>`
-ElementalComponent.registerTemplate(
-  ButtonCounter,
-  `<button>Click Me</button>`,
-  ElementalComponentPrefix.from('awesome'),
-);
-```
-
-#### Registering a component and a template together
-
-```ts
-const template = `<button>MyButton</button>`;
-
-ElementalComponent.register(ButtonCounter, { template });
+ElementalComponent.register(ButtonCounter, {
+  template: `<button>Click Me</button>`,
+  prefix: ElementalComponentPrefix.from('awesome'),
+});
 ```
 
 ::: tip 💁 `this.$template`
@@ -100,9 +93,19 @@ its own template first.
 :::
 
 ```ts
-const template = `<button>MyButton</button>`;
-
 ElementalComponent.register(ButtonCounter);
 
-const myButton = new ButtonCounter({ templateId: `some-template-id` });
+const myButton = new ButtonCounter({
+  templateId: `some-template-id`,
+});
+```
+
+The templateId can also be passed during the registration process to use that as the template,
+but in that case the template will be copied into a new template with the id that of the
+element's tagName.
+
+```ts
+ElementalComponent.register(ButtonCounter, {
+  templateId: `some-template-id`,
+});
 ```

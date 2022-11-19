@@ -21,6 +21,39 @@ export class ElementalComponentRegistry {
 All custom elements when instantiated will get an auto-generated `id` if one is not provided
 :::
 
+### RegistrationOptions
+
+```ts
+interface RegistrationOptions {
+  prefix?: ElementalComponentPrefix;
+
+  /**
+   * The ID of the template that should be used as a template for this component
+   *
+   * This option allows us to reuse existing templates
+   */
+  templateId?: string;
+
+  /**
+   * The template HTML that should be registered along with the template registration
+   */
+  template?: string;
+
+  /**
+   * Styles that will be registered as a style element in the component root
+   */
+  styles?: string;
+
+  /**
+   * @deprecated
+   *
+   * The extension of native HTML components is not supported by Safari.
+   * The team has decided to not support it in the future either. So use this functionality with caution
+   */
+  extends?: string;
+}
+```
+
 ### Usage
 
 #### Registering with default prefix `el`
@@ -72,6 +105,15 @@ If a `templateId` is provided and a template with such an id already exists, the
 registry will try to copy its content into a new template element which will then be
 registered for the given component.
 :::
+
+#### Registering a component with a template and styles
+
+```ts
+const template = `<button>MyButton</button>`;
+const styles = `:host { padding: 0; margin: 0; }`;
+
+ElementalComponentRegistry.register(ButtonCounter, { template, styles });
+```
 
 ## Check if component is registered
 

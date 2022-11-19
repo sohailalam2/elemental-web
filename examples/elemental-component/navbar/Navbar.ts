@@ -1,5 +1,5 @@
-import { debug, Exception, ValueObject, toKebabCase, randomId } from '@sohailalam2/abu';
-import { ElementalComponent, EventListenerRegistration } from '../../../src/elemental-component';
+import { Exception, ValueObject, toKebabCase, randomId } from '@sohailalam2/abu';
+import { ElementalComponent, EventListenerRegistration } from '../../../src';
 
 import styles from './styles.scss?inline';
 import template from './template.html?raw';
@@ -50,16 +50,12 @@ export class Navbar extends ElementalComponent<NavbarMenu> {
       return;
     }
 
-    const style = this.$root.querySelector('style') as HTMLStyleElement;
     const start = this.$root.querySelector('.navbar-start') as HTMLDivElement;
     const end = this.$root.querySelector('.navbar-end') as HTMLDivElement;
 
-    if (!style || !start || !end) {
+    if (!start || !end) {
       throw new NavbarTemplateIsInvalidException();
     }
-    style.textContent = styles;
-
-    debug(this.$state);
 
     (this.$state?.start ?? []).forEach(menu => this.appendItem(menu, start));
     (this.$state?.end ?? []).forEach(menu => this.appendItem(menu, end));
@@ -83,4 +79,4 @@ export class Navbar extends ElementalComponent<NavbarMenu> {
   }
 }
 
-ElementalComponent.register(Navbar, { template });
+ElementalComponent.register(Navbar, { template, styles });

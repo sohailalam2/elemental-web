@@ -43,14 +43,9 @@ export class Hero extends ElementalComponent<HeroMessage> {
   }
 
   protected render() {
-    const style = this.$root.querySelector('style');
     const name = this.$root.querySelector('.name') as HTMLParagraphElement;
     const tagline = this.$root.querySelector('.tagline') as HTMLParagraphElement;
     const secret = this.$root.querySelector('.secret') as HTMLParagraphElement;
-
-    if (style) {
-      style.textContent = styles;
-    }
 
     name.textContent = `I am ${this.name}`;
     tagline.textContent = this.tagline;
@@ -85,4 +80,4 @@ export class Hero extends ElementalComponent<HeroMessage> {
   }
 }
 
-ElementalComponent.register(Hero, { template });
+ElementalComponent.register(Hero, { template, styles });

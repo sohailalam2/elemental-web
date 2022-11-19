@@ -188,8 +188,7 @@ describe('ElementalComponent', () => {
     const tagName = `el-${toKebabCase(MyComponentRendersTemplate.name)}`;
     const renderedHtml = templateContent.replace('<p></p>', `<p>template state</p>`);
 
-    ElementalComponent.register(MyComponentRendersTemplate);
-    ElementalComponent.registerTemplate(MyComponentRendersTemplate, templateContent);
+    ElementalComponent.register(MyComponentRendersTemplate, { template: templateContent });
 
     const domComponentWithTemplate = document.createElement(tagName) as MyComponentRendersTemplate;
 

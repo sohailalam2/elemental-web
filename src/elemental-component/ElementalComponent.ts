@@ -73,14 +73,6 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
     ElementalComponentRegistry.registerComponent(element, options);
   }
 
-  public static registerTemplate<T extends ElementalComponent<unknown>>(
-    element: Class<T>,
-    template: string,
-    prefix?: ElementalComponentPrefix,
-  ): void {
-    ElementalComponentRegistry.registerTemplate(element, template, prefix);
-  }
-
   public static tagName<T extends ElementalComponent<unknown>>(
     element: Class<T>,
     prefix?: ElementalComponentPrefix,

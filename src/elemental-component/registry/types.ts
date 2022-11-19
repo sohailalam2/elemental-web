@@ -16,6 +16,11 @@ export interface RegistrationOptions {
   template?: string;
 
   /**
+   * Styles that will be registered as a style element in the component root
+   */
+  styles?: string;
+
+  /**
    * @deprecated
    *
    * The extension of native HTML components is not supported by Safari.
