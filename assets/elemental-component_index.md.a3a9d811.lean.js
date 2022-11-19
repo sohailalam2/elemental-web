@@ -1,0 +1,1 @@
+import{_ as s,c as n,o as a,a as l}from"./app.9eecd835.js";const b=JSON.parse('{"title":"Elemental Component","description":"","frontmatter":{},"headers":[],"relativePath":"elemental-component/index.md"}'),p={name:"elemental-component/index.md"},e=l("",18),o=[e];function t(c,r,y,E,i,C){return a(),n("div",null,o)}const d=s(p,[["render",t]]);export{b as __pageData,d as default};
