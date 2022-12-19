@@ -33,7 +33,7 @@ class MyComponent extends ElementalComponent {
     super({ state: 'Hello World', mode: 'closed' });
   }
 
-  render(): string {
+  render() {
     if (!this.$template) {
       this.$root.innerHTML = `<p>${this.$state}</p>`;
       return;

@@ -4,6 +4,12 @@
     ["meta", { "name": "theme-color", "content": "#3c8772" }],
     ["link", { "rel": "preconnect", "href": "https://fonts.gstatic.com", "crossorigin": "" }]
   ],
+  "projects": [
+    {
+      "text": "Abu",
+      "link": "https://sohailalam2.github.io/abu"
+    }
+  ],
   "socialLinks": [
     {
       "link": "https://github.com/sohailalam2/elemental-web",

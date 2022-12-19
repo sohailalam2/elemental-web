@@ -7,9 +7,9 @@ titleTemplate: Modern web technologies in a nutshell 😍
 hero:
   name: Elemental Web
   text: Modern web technologies in a nutshell 😍
-  tagline: Your only awesome and lightning fast library for the modern web
+  tagline: Your only awesome and lightning fast library for building the modern web
   image:
-    src: /assets/logo.png
+    src: /home.svg
   actions:
     - theme: brand
       text: Get Started

@@ -4,7 +4,6 @@ import { join } from 'path';
 import createNavigation from './navbar';
 import { name as title, description } from '../../package.json';
 
-const base = `/${title.split('/')[1]}`;
 const srcDir = join(__dirname, '../../docs');
 const outDir = join(__dirname, '../../dist/docs');
 const { nav, sidebar } = createNavigation(srcDir);
@@ -14,10 +13,10 @@ import { siteTitle, head, socialLinks } from './seo.json';
 export default defineConfig({
   title,
   description,
-  base,
   srcDir,
   outDir,
   head,
+  base: '/',
   lang: 'en-US',
   appearance: 'light',
   ignoreDeadLinks: true,
@@ -38,7 +37,7 @@ export default defineConfig({
     sidebar,
     socialLinks,
     siteTitle,
-    logo: '../logo.png',
+    logo: '/logo.svg',
     outline: [2, 3],
     docFooter: {
       prev: null,
@@ -46,7 +45,7 @@ export default defineConfig({
     },
     footer: {
       message: 'Released under the MIT License.',
-      copyright: `Copyright © 2020-${new Date().getFullYear()} <a href="https://github.com/sohailalam2">Sohail Alam</a>`,
+      copyright: `Copyright © 2022-${new Date().getFullYear()} <a href="https://github.com/sohailalam2">Sohail Alam</a>`,
     },
   },
   vite: {

@@ -1,7 +1,10 @@
-<section align="center">
+<section>
   <br />
+  <a href="https://sohailalam2.github.io/elemental-web/" target="_blank" rel="noopener noreferrer">
+    <img width="64" src="/logo.svg" alt="Abu Logo">
+  </a>
   <h1>Elemental Web</h1>
-  <h5>Modern web technologies in a nutshell 😍</h5>
+  <p>Modern web technologies in a nutshell 😍</p>
   <br />
 </section>
 
