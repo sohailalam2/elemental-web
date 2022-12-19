@@ -1,1 +1,1 @@
-const e="/elemental-web/assets/inheritance.72d80d4a.png";export{e as _};
+const s="/assets/inheritance.72d80d4a.png";export{s as _};

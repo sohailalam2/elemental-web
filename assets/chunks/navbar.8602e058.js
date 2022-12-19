@@ -1,1 +1,1 @@
-const e="/elemental-web/assets/navbar.5b4892df.png";export{e as _};
+const s="/assets/navbar.5b4892df.png";export{s as _};
