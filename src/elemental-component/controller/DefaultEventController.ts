@@ -45,16 +45,18 @@ export class DefaultEventController<T extends HTMLElement> implements EventContr
     const { attachTo, handler, handlerName, isCustomEvent, name, options } = registration;
 
     const methodRef = this.validateAndGetBoundMethodHandler(handler, handlerName);
-    const eventOptions = { capture: true, ...(options || {}) };
+
     const attachToElement = attachTo ?? this.component;
     const eventListenerKey = `[${attachToElement.tagName}][${attachToElement.id}][${name}][${methodRef.name}]`;
-    const elementForEventListener = isCustomEvent ? document : attachToElement;
 
     if (this.eventListeners.has(eventListenerKey)) {
       this.debug(`Skipping duplicate registration ${eventListenerKey} => ${methodRef.name}`);
 
       return;
     }
+
+    const eventOptions = { capture: true, ...(options || {}) };
+    const elementForEventListener = isCustomEvent ? document : attachToElement;
 
     elementForEventListener.addEventListener(name, methodRef, eventOptions);
 

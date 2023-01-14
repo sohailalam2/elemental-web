@@ -72,7 +72,7 @@ export class ElementalComponentRegistry {
     if (customElements.get(tagName)) {
       throw new ElementalComponentIsAlreadyRegistered(tagName);
     }
-    debug(`[elemental-component] Registering component "${tagName}"`);
+    debug(`[elemental-component][registry] Registering component "${tagName}"`);
 
     // NOTE: the order of template and component registration is important
     // as only a pre-registered template can be discovered by a component
@@ -83,17 +83,17 @@ export class ElementalComponentRegistry {
     ElementalComponentRegistry.COMPONENT_CLASSNAME_TO_TAGNAME.set(element.name, tagName);
     customElements.define(tagName, element, { extends: options?.extends ?? undefined });
 
-    debug(`[elemental-component] Component is successfully registered "${tagName}"`);
+    debug(`[elemental-component][registry] Component is successfully registered "${tagName}"`);
   }
 
   public static registerTemplate(element: Class<HTMLElement>, options?: RegistrationOptions): void {
     const tagName = ElementalComponentRegistry.generateTagNameForElement(element, options?.prefix);
 
-    debug(`[elemental-component] Registering template for component "${tagName}"`);
+    debug(`[elemental-component][registry] Registering template for component "${tagName}"`);
     this.validateTemplateBeforeRegistration(tagName, options);
     this.createTemplateElement(tagName, element, options);
     this.addStylesToTemplate(tagName, options);
-    debug(`[elemental-component] Template is successfully registered for component "${tagName}"`);
+    debug(`[elemental-component][registry] Template is successfully registered for component "${tagName}"`);
   }
 
   private static validateTemplateBeforeRegistration(tagName: string, options?: RegistrationOptions) {
@@ -134,7 +134,7 @@ export class ElementalComponentRegistry {
 
   private static addStylesToTemplate(tagName: string, options?: RegistrationOptions) {
     if (options?.styles) {
-      debug(`[elemental-component] Adding styles to template # "${tagName}"`);
+      debug(`[elemental-component][registry] Adding styles to template # "${tagName}"`);
       const template = document.getElementById(tagName) as HTMLTemplateElement;
       let style = template.content.querySelector('style') as HTMLStyleElement;
 
