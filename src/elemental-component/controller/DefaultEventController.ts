@@ -1,6 +1,6 @@
 import { debug, Exception, serialize } from '@sohailalam2/abu';
 
-import { EventListenerRegistration, EventOptions, EventController } from './';
+import { EventController, EventListenerRegistration, EventOptions } from './';
 
 export class ElementalComponentCustomEventHandlerIsNotDefined extends Exception {}
 
@@ -10,52 +10,8 @@ export class DefaultEventController<T extends HTMLElement> implements EventContr
 
   constructor(private readonly component: T) {}
 
-  private static isBound(func: unknown): boolean {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    return func.name.startsWith('bound ') && !Object.hasOwn(func, 'prototype');
-  }
-
   public registerEventListeners(registrations: EventListenerRegistration[]): void {
-    registrations.forEach(registration => {
-      const { name, isCustomEvent } = registration;
-      let { handlerName, handler, options, attachTo } = registration;
-
-      if (!handler && !handlerName) {
-        throw new ElementalComponentCustomEventHandlerIsNotDefined(handlerName);
-      }
-
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // eslint-disable-next-line security/detect-object-injection
-      let methodRef = handler || (this.component[handlerName] as (e: Event) => void);
-
-      if (!methodRef) {
-        throw new ElementalComponentCustomEventHandlerIsNotDefined(handlerName);
-      }
-
-      if (!DefaultEventController.isBound(methodRef)) {
-        methodRef = methodRef.bind(this.component);
-      }
-
-      attachTo = attachTo ?? this.component;
-      const eventListenerKey = `[${attachTo.tagName}][${attachTo.id}][${name}][${methodRef.name}]`;
-
-      if (this.eventListeners.has(eventListenerKey)) {
-        this.debug(
-          `Skipping duplicate event handler registration ${eventListenerKey} => ${handlerName || handler?.name}`,
-        );
-
-        return;
-      }
-
-      handler = methodRef;
-      handlerName = methodRef.name;
-      options = { capture: true, ...(options || {}) };
-      (isCustomEvent ? document : attachTo).addEventListener(name, methodRef, options);
-      this.eventListeners.set(`[${attachTo.id}][${name}]`, { name, isCustomEvent, handlerName, handler, options });
-      this.debug(`Added EventListener ${eventListenerKey} => ${methodRef.name}`);
-    });
+    registrations.forEach(this.registerEventListener.bind(this));
   }
 
   public deregisterEventListeners(): void {
@@ -63,7 +19,9 @@ export class DefaultEventController<T extends HTMLElement> implements EventContr
       if (!reg || !reg.name || !reg.handler) {
         return;
       }
-      (reg.isCustomEvent ? document : this.component).removeEventListener(reg.name, reg.handler, reg.options);
+      const elementForEventListener = reg.isCustomEvent ? document : this.component;
+
+      elementForEventListener.removeEventListener(reg.name, reg.handler, reg.options);
       this.eventListeners.delete(eventListenerKey);
       this.debug(`Removed EventListener ${eventListenerKey} => ${reg.handler.name}`);
     }
@@ -83,9 +41,63 @@ export class DefaultEventController<T extends HTMLElement> implements EventContr
     this.component.dispatchEvent(event);
   }
 
+  private registerEventListener(registration: EventListenerRegistration) {
+    const { attachTo, handler, handlerName, isCustomEvent, name, options } = registration;
+
+    const methodRef = this.validateAndGetBoundMethodHandler(handler, handlerName);
+    const eventOptions = { capture: true, ...(options || {}) };
+    const attachToElement = attachTo ?? this.component;
+    const eventListenerKey = `[${attachToElement.tagName}][${attachToElement.id}][${name}][${methodRef.name}]`;
+    const elementForEventListener = isCustomEvent ? document : attachToElement;
+
+    if (this.eventListeners.has(eventListenerKey)) {
+      this.debug(`Skipping duplicate registration ${eventListenerKey} => ${methodRef.name}`);
+
+      return;
+    }
+
+    elementForEventListener.addEventListener(name, methodRef, eventOptions);
+
+    this.eventListeners.set(eventListenerKey, {
+      name,
+      isCustomEvent,
+      options: eventOptions,
+      handler: methodRef,
+      handlerName: methodRef.name,
+    });
+
+    this.debug(`Added EventListener ${eventListenerKey} => ${methodRef.name}`);
+  }
+
+  private validateAndGetBoundMethodHandler(handler: ((e: Event) => void) | undefined, handlerName: string | undefined) {
+    if (!handler && !handlerName) {
+      throw new ElementalComponentCustomEventHandlerIsNotDefined(handlerName);
+    }
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    // eslint-disable-next-line security/detect-object-injection
+    const methodRef = handler || (this.component[handlerName] as (e: Event) => void);
+
+    if (!methodRef) {
+      throw new ElementalComponentCustomEventHandlerIsNotDefined(handlerName);
+    }
+
+    return this.bindMethodIfNotBound(methodRef);
+  }
+
+  private bindMethodIfNotBound(func: (e: Event) => void) {
+    const isBound = func.name.startsWith('bound ') && !Object.hasOwn(func, 'prototype');
+
+    if (!isBound) {
+      return func.bind(this.component);
+    }
+
+    return func;
+  }
+
   private debug(message?: string, ...optionalParams: unknown[]) {
     debug(
-      `[elemental-component][${this.component.constructor.name}][id=${this.component.id}] ${message}`,
+      `[elemental-component][controller][${this.component.constructor.name}][id=${this.component.id}] ${message}`,
       ...optionalParams,
     );
   }
