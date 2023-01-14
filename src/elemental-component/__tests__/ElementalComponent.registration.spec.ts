@@ -8,7 +8,7 @@ import {
   RegistrationOptions,
   ElementalComponentRegistry,
   ElementalComponentIsNotRegisteredException,
-  ElementalComponentNoSuchTemplateFoundException,
+  ElementalComponentTemplateNotFoundException,
   ElementalComponentTemplateCanNotBeEmptyException,
 } from '../registry';
 
@@ -84,7 +84,7 @@ describe('ElementalComponent Registration', () => {
     const options: RegistrationOptions = { templateId: `not-found` };
 
     expect(() => ElementalComponent.register(MyComponentWithTemplateIdNotFound, options)).toThrow(
-      ElementalComponentNoSuchTemplateFoundException,
+      ElementalComponentTemplateNotFoundException,
     );
   });
 
@@ -109,7 +109,7 @@ describe('ElementalComponent Registration', () => {
     ElementalComponent.register(MyInstanceWithTemplateIdNotFound);
 
     expect(() => new MyInstanceWithTemplateIdNotFound({ templateId: 'not-found' })).toThrow(
-      ElementalComponentNoSuchTemplateFoundException,
+      ElementalComponentTemplateNotFoundException,
     );
   });
 

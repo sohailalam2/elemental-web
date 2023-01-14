@@ -6,7 +6,7 @@ import {
   RegistrationOptions,
   ElementalComponentRegistry,
   ElementalComponentIsNotRegisteredException,
-  ElementalComponentNoSuchTemplateFoundException,
+  ElementalComponentTemplateNotFoundException,
 } from './registry';
 import { DefaultEventController, EventController, EventListenerRegistration, EventOptions } from './controller';
 
@@ -36,7 +36,7 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
   constructor(private readonly options: ElementalComponentOptions = {}) {
     super();
     const className = this.constructor.name;
-    const isRegistered = ElementalComponentRegistry.isComponentRegisteredByClassName(className);
+    const isRegistered = ElementalComponentRegistry.isComponentRegisteredWithClassName(className);
 
     if (!isRegistered) {
       throw new ElementalComponentIsNotRegisteredException(className);
@@ -54,7 +54,7 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
     this.configureAttributesAndProperties(this.getAttributeNames());
 
     this.id = this.getAttribute('id') || options.id?.value || randomId();
-    this.tagName = ElementalComponentRegistry.generateTagNameFromClassName(className);
+    this.tagName = ElementalComponentRegistry.generateTagNameForClassName(className);
 
     this.$template = this.setupTemplate(this.options?.templateId);
 
@@ -77,7 +77,7 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
     element: Class<T>,
     prefix?: ElementalComponentPrefix,
   ): string {
-    return ElementalComponentRegistry.generateTagName(element, prefix);
+    return ElementalComponentRegistry.generateTagNameForElement(element, prefix);
   }
 
   protected deserialize(serializedState: string | undefined): State {
@@ -193,14 +193,14 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
 
     const proto = Object.getPrototypeOf(this.constructor.prototype);
     const parentElement = proto.constructor as Class<ElementalComponent>;
-    const parentTagName = ElementalComponentRegistry.registeredTagName(parentElement.name);
-    const tagName = ElementalComponentRegistry.generateTagNameFromClassName(this.constructor.name);
+    const parentTagName = ElementalComponentRegistry.getRegisteredTagName(parentElement.name);
+    const tagName = ElementalComponentRegistry.generateTagNameForClassName(this.constructor.name);
 
     if (templateId) {
       template = document.getElementById(templateId) as HTMLTemplateElement;
 
       if (!template) {
-        throw new ElementalComponentNoSuchTemplateFoundException(templateId);
+        throw new ElementalComponentTemplateNotFoundException(templateId);
       }
     } else if (parentTagName) {
       this.debug(`Component extends "${parentElement.name}"... checking template in parent`);

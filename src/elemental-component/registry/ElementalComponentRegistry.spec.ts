@@ -1,15 +1,14 @@
 /* eslint-disable max-classes-per-file, @typescript-eslint/ban-ts-comment */
 import { beforeEach, describe, expect, it } from 'vitest';
+import { toKebabCase } from '@sohailalam2/abu';
 
 import {
+  ElementalComponentRegistry,
   ElementalComponentIsAlreadyRegistered,
   ElementalComponentPrefix,
   ElementalComponentTemplateCanNotBeEmptyException,
-  ElementalComponentTemplateIsAlreadyRegistered,
+  ElementalComponentTemplateIsAlreadyRegisteredException,
 } from '@/elemental-component';
-
-import { ElementalComponentRegistry } from './ElementalComponentRegistry';
-import { toKebabCase } from '@sohailalam2/abu';
 
 describe('DefaultRegistry', () => {
   let customPrefix: ElementalComponentPrefix;
@@ -22,7 +21,7 @@ describe('DefaultRegistry', () => {
 
   describe('tagName', () => {
     it('should generate tag name from a given string', () => {
-      const tagName = ElementalComponentRegistry.generateTagNameFromClassName('MyElement');
+      const tagName = ElementalComponentRegistry.generateTagNameForClassName('MyElement');
 
       expect(tagName).toBeDefined();
       expect(tagName).toEqual(`el-my-element`);
@@ -31,7 +30,7 @@ describe('DefaultRegistry', () => {
     it('should generate tag name with default prefix', () => {
       class MyElement extends HTMLElement {}
 
-      const tagName = ElementalComponentRegistry.generateTagName(MyElement);
+      const tagName = ElementalComponentRegistry.generateTagNameForElement(MyElement);
 
       expect(tagName).toBeDefined();
       expect(tagName).toEqual(`el-${toKebabCase(MyElement.name)}`);
@@ -41,7 +40,7 @@ describe('DefaultRegistry', () => {
       class MyElementWithCustomPrefix extends HTMLElement {}
 
       ElementalComponentRegistry.setDefaultPrefix(ElementalComponentPrefix.from('my'));
-      const tagName = ElementalComponentRegistry.generateTagName(MyElementWithCustomPrefix);
+      const tagName = ElementalComponentRegistry.generateTagNameForElement(MyElementWithCustomPrefix);
 
       expect(tagName).toBeDefined();
       expect(tagName).toEqual(`my-${toKebabCase(MyElementWithCustomPrefix.name)}`);
@@ -53,7 +52,7 @@ describe('DefaultRegistry', () => {
     it('should generate tag name with a given prefix', () => {
       class MyElement extends HTMLElement {}
 
-      const tagName = ElementalComponentRegistry.generateTagName(MyElement, customPrefix);
+      const tagName = ElementalComponentRegistry.generateTagNameForElement(MyElement, customPrefix);
 
       expect(tagName).toBeDefined();
       expect(tagName).toEqual(`${customPrefix.value}-${toKebabCase(MyElement.name)}`);
@@ -64,7 +63,7 @@ describe('DefaultRegistry', () => {
 
       ElementalComponentRegistry.registerComponent(MyElement4, { prefix: customPrefix });
 
-      expect(ElementalComponentRegistry.registeredTagName(MyElement4.name)).toEqual(
+      expect(ElementalComponentRegistry.getRegisteredTagName(MyElement4.name)).toEqual(
         `${customPrefix.value}-${toKebabCase(MyElement4.name)}`,
       );
     });
@@ -77,7 +76,7 @@ describe('DefaultRegistry', () => {
       ElementalComponentRegistry.registerComponent(MyElement1);
 
       expect(ElementalComponentRegistry.isComponentRegistered(MyElement1)).toEqual(true);
-      expect(ElementalComponentRegistry.registeredTagName(MyElement1.name)).toEqual(
+      expect(ElementalComponentRegistry.getRegisteredTagName(MyElement1.name)).toEqual(
         `el-${toKebabCase(MyElement1.name)}`,
       );
     });
@@ -88,7 +87,7 @@ describe('DefaultRegistry', () => {
       ElementalComponentRegistry.registerComponent(MyElement2, { prefix: customPrefix });
 
       expect(ElementalComponentRegistry.isComponentRegistered(MyElement2)).toEqual(true);
-      expect(ElementalComponentRegistry.registeredTagName(MyElement2.name)).toEqual(
+      expect(ElementalComponentRegistry.getRegisteredTagName(MyElement2.name)).toEqual(
         `${customPrefix.value}-${toKebabCase(MyElement2.name)}`,
       );
     });
@@ -129,19 +128,19 @@ describe('DefaultRegistry', () => {
 
       ElementalComponentRegistry.registerComponent(MyElement51);
 
-      expect(ElementalComponentRegistry.isComponentRegisteredByClassName(MyElement51.name)).toEqual(true);
+      expect(ElementalComponentRegistry.isComponentRegisteredWithClassName(MyElement51.name)).toEqual(true);
     });
 
     it('should correctly return whether component is registered by tag name', () => {
       class MyElement7 extends HTMLElement {}
 
-      expect(ElementalComponentRegistry.isComponentRegisteredByTagName(`el-${toKebabCase(MyElement7.name)}`)).toEqual(
+      expect(ElementalComponentRegistry.isComponentRegisteredWithTagName(`el-${toKebabCase(MyElement7.name)}`)).toEqual(
         false,
       );
 
       ElementalComponentRegistry.registerComponent(MyElement7);
 
-      expect(ElementalComponentRegistry.isComponentRegisteredByTagName(`el-${toKebabCase(MyElement7.name)}`)).toEqual(
+      expect(ElementalComponentRegistry.isComponentRegisteredWithTagName(`el-${toKebabCase(MyElement7.name)}`)).toEqual(
         true,
       );
     });
@@ -179,20 +178,20 @@ describe('DefaultRegistry', () => {
 
       ElementalComponentRegistry.registerTemplate(MyElement11, { template });
       expect(() => ElementalComponentRegistry.registerTemplate(MyElement11, { template })).to.throw(
-        ElementalComponentTemplateIsAlreadyRegistered,
+        ElementalComponentTemplateIsAlreadyRegisteredException,
       );
     });
 
     it('should correctly return whether a template is registered by tag name', () => {
       class MyElement12 extends HTMLElement {}
 
-      expect(ElementalComponentRegistry.isTemplateRegisteredByTagName(`el-${toKebabCase(MyElement12.name)}`)).toEqual(
+      expect(ElementalComponentRegistry.isTemplateRegisteredWithTagName(`el-${toKebabCase(MyElement12.name)}`)).toEqual(
         false,
       );
 
       ElementalComponentRegistry.registerTemplate(MyElement12, { template });
 
-      expect(ElementalComponentRegistry.isTemplateRegisteredByTagName(`el-${toKebabCase(MyElement12.name)}`)).toEqual(
+      expect(ElementalComponentRegistry.isTemplateRegisteredWithTagName(`el-${toKebabCase(MyElement12.name)}`)).toEqual(
         true,
       );
     });
@@ -206,7 +205,7 @@ describe('DefaultRegistry', () => {
 
       ElementalComponentRegistry.registerTemplate(MyElement13, { template: template13, styles });
 
-      expect(ElementalComponentRegistry.isTemplateRegisteredByTagName(tagName)).toEqual(true);
+      expect(ElementalComponentRegistry.isTemplateRegisteredWithTagName(tagName)).toEqual(true);
       expect(document.getElementById(tagName)).toBeDefined();
       expect((document.getElementById(tagName) as HTMLTemplateElement).content.querySelector('style')).toBeDefined();
       expect(
@@ -222,7 +221,7 @@ describe('DefaultRegistry', () => {
 
       ElementalComponentRegistry.registerTemplate(MyElement14, { template, styles });
 
-      expect(ElementalComponentRegistry.isTemplateRegisteredByTagName(tagName)).toEqual(true);
+      expect(ElementalComponentRegistry.isTemplateRegisteredWithTagName(tagName)).toEqual(true);
       expect(document.getElementById(tagName)).toBeDefined();
       expect((document.getElementById(tagName) as HTMLTemplateElement).content.querySelector('style')).toBeDefined();
       expect(
