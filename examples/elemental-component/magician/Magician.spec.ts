@@ -42,10 +42,12 @@ describe('Magician', () => {
   });
 
   it('should render a magician', () => {
-    expect(magician.$root.innerHTML).toEqual(`<section>
+    const html = `
+<section>
   <p slot="name" part="name">${state.value.name.value}</p>
   <p slot="superpower" part="superpower">${state.value.superpower.value}</p>
-</section>
-`);
+</section>`;
+
+    expect(magician.$root.innerHTML.trim()).toEqual(html.trim());
   });
 });
