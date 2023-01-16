@@ -1,16 +1,19 @@
 import './inheritance';
 import { navbar } from './navbar';
 import { magician } from './magician';
+import { Paragraph } from './stateless';
 
 // 👌 add the components to the document body to render
 document.body.prepend(navbar);
 
 document.body.innerHTML += `
 <div style="display: flex; margin-top: 4%;">
-    <p>Hello World! This is a regular paragraph, not an elemental component.</p>
+    <p>This is a regular paragraph, not an elemental component.</p>
 </div>
 <hr />
 `;
+
+document.body.appendChild(new Paragraph());
 
 document.body.appendChild(magician);
 

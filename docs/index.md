@@ -7,7 +7,7 @@ titleTemplate: Modern web technologies in a nutshell 😍
 hero:
   name: Elemental Web
   text: Modern web technologies in a nutshell 😍
-  tagline: Your only awesome and lightning fast library for building the modern web
+  tagline: Unlock the full potential of HTML/JS technologies to build cutting-edge web applications 🔥
   image:
     src: /home.svg
   actions:
@@ -20,7 +20,7 @@ hero:
 
 features:
   - title: Elemental Web is smart and shakes trees 🍃
-    details: Supports tree-shaking, so you only import what you need 😃
+    details: It supports tree-shaking, so you only import what you need 😃
   - title: Elemental Web works on modern browsers 🌍
-    details: Works on modern browsers out of the box but can also be polyfilled to support older ones
+    details: Build for the modern browsers but optionally fallback with polyfill
 ---

@@ -2,7 +2,7 @@
 
 In this example, we use a 3rd party CSS framework [Bulma](https://bulma.io)
 
-![Navbar Example](../../assets/elemental-component/navbar.png)
+![navbar-example.png](/assets/elemental-component/navbar-example.png)
 
 ## template.html
 
@@ -11,7 +11,7 @@ In this example, we use a 3rd party CSS framework [Bulma](https://bulma.io)
 <nav class="navbar is-black is-fixed-top" role="navigation" aria-label="main navigation">
   <div class="navbar-brand">
     <a class="navbar-item" href="https://github.com/sohailalam2/elemental-web">
-      <img src="examples/elemental-component/navbartal-component/navbar/assets/logo.png" alt="brand logo" />
+      <img src="logo.svg" alt="Logo" />
     </a>
     <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="main-navbar">
       <span aria-hidden="true"></span>
@@ -29,11 +29,11 @@ In this example, we use a 3rd party CSS framework [Bulma](https://bulma.io)
 ## styles.scss
 
 ```scss
-@import 'bulma/sass/utilities/controls';
-@import 'bulma/sass/utilities/extends';
-@import 'bulma/sass/utilities/initial-variables';
-@import 'bulma/sass/base/minireset';
-@import 'bulma/sass/components/navbar';
+@import 'node_modules/bulma/sass/utilities/controls';
+@import 'node_modules/bulma/sass/utilities/extends';
+@import 'node_modules/bulma/sass/utilities/initial-variables';
+@import 'node_modules/bulma/sass/base/minireset';
+@import 'node_modules/bulma/sass/components/navbar';
 
 a {
   text-decoration: none;
@@ -43,8 +43,13 @@ a {
 ## Navbar.ts
 
 ```ts
-import { Exception, ValueObject, toKebabCase, randomId } from '@sohailalam2/abu';
-import { ElementalComponent, EventListenerRegistration } from '@/elemental-component';
+import { Exception, ValueObject, toKebabCase, randomId, hasValue } from '@sohailalam2/abu';
+import {
+  EventListenerRegistration,
+  StatefulElementalComponent,
+  ElementalComponentState,
+  StateIsNotConsistentException,
+} from '@sohailalam2/elemental-web';
 
 import styles from './styles.scss?inline';
 import template from './template.html?raw';
@@ -67,9 +72,29 @@ export interface NavbarMenu {
   end: NavbarItem[];
 }
 
+export class State extends ElementalComponentState<NavbarMenu> {
+  static defaultState<Type, K extends ValueObject<Type>>(): K {
+    return State.from({
+      start: [],
+      end: [],
+    }) as K;
+  }
+
+  validate() {
+    super.validate();
+    const isConsistent = hasValue(this.value) && Array.isArray(this.value.start) && Array.isArray(this.value.end);
+
+    if (!isConsistent) {
+      throw new StateIsNotConsistentException(this.constructor.name);
+    }
+  }
+}
+
 export class NavbarTemplateIsInvalidException extends Exception {}
 
-export class Navbar extends ElementalComponent<NavbarMenu> {
+export class Navbar extends StatefulElementalComponent<State> {
+  private readonly menuRenderedMap: Map<string, boolean> = new Map<string, boolean>();
+
   connectedCallback() {
     super.connectedCallback();
     const eventListeners: EventListenerRegistration[] = [];
@@ -90,8 +115,13 @@ export class Navbar extends ElementalComponent<NavbarMenu> {
     this.registerEventListeners(eventListeners);
   }
 
+  protected disconnectedCallback() {
+    super.disconnectedCallback();
+    this.menuRenderedMap.clear();
+  }
+
   render() {
-    if (!this.$template) {
+    if (!this.isConnected) {
       return;
     }
 
@@ -102,28 +132,35 @@ export class Navbar extends ElementalComponent<NavbarMenu> {
       throw new NavbarTemplateIsInvalidException();
     }
 
-    (this.$state?.start ?? []).forEach(menu => this.appendItem(menu, start));
-    (this.$state?.end ?? []).forEach(menu => this.appendItem(menu, end));
+    this.$state.value.start.forEach(menu => this.appendItem(menu, start));
+    this.$state.value.end.forEach(menu => this.appendItem(menu, end));
   }
 
   private appendItem(item: NavbarItem, position: Element) {
+    const text = item.toString();
+
+    if (this.menuRenderedMap.has(text)) {
+      return;
+    }
     const a = document.createElement('a');
 
     a.id = randomId();
     a.className = 'navbar-item';
-    a.textContent = item.toString();
-    a.href = toKebabCase(item.toString());
+    a.textContent = text;
+    a.href = toKebabCase(text);
 
     position.appendChild(a);
+    this.menuRenderedMap.set(text, true);
   }
 
   private onItemClickHandler(e: Event): void {
     e.preventDefault();
+    // eslint-disable-next-line no-alert
     alert((e.target as HTMLAnchorElement).href);
   }
 }
 
-ElementalComponent.register(Navbar, { template, styles });
+StatefulElementalComponent.register(Navbar, { template, styles });
 ```
 
 ## index.ts
@@ -136,7 +173,7 @@ const menu: NavbarMenu = {
   end: [NavbarItem.from('Login'), NavbarItem.from('Signup')],
 };
 
-export const navbar = new Navbar({ state: menu });
+const navbar = new Navbar({ state: State.from<NavbarMenu, State>(menu) });
 
 // 👌 add the custom element to the document body to render
 document.body.prepend(navbar);

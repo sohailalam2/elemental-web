@@ -25,17 +25,25 @@ The below example will instantiate a new `ButtonCounter` with its initial `state
 
 ### Instantiate Programmatically
 
+::: tip 💁 `this.$root`
+Every instance of ElementalComponent provides direct access to its DOM root through the read-only instance property `this.$root`.
+:::
+
 ### Usage
 
 ```ts
-class MyComponent extends ElementalComponent {
+import { ElementalComponentState, StatefulElementalComponent } from '@sohailalam2/elemental-web';
+
+class MyState extends ElementalComponentState<string> {}
+
+class MyComponent extends StatefulElementalComponent<MyState> {
   constructor() {
-    super({ state: 'Hello World', mode: 'closed' });
+    super({ state: MyState.from('Hello World'), mode: 'closed' });
   }
 
   render() {
     if (!this.$template) {
-      this.$root.innerHTML = `<p>${this.$state}</p>`;
+      this.$root.innerHTML = `<p>${this.$state.value}</p>`;
       return;
     }
 
@@ -43,7 +51,7 @@ class MyComponent extends ElementalComponent {
     const p = this.$root.querySelector('p');
 
     if (p) {
-      p.textContent = this.$state;
+      p.textContent = this.$state.value;
     }
   }
 }
@@ -58,8 +66,3 @@ const component = new MyComponent();
 
 document.body.appendChild(component);
 ```
-
-::: tip 💁 `this.$root`
-Every instance of an `ElementalComponent` can have direct access to its DOM root using
-the `this.$root` readonly instance property.
-:::
