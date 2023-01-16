@@ -1,5 +1,10 @@
-import { Exception, ValueObject, toKebabCase, randomId } from '@sohailalam2/abu';
-import { ElementalComponent, EventListenerRegistration } from '../../../src';
+import { Exception, ValueObject, toKebabCase, randomId, hasValue } from '@sohailalam2/abu';
+import {
+  EventListenerRegistration,
+  StatefulElementalComponent,
+  ElementalComponentState,
+  StateIsNotConsistentException,
+} from '../../../src';
 
 import styles from './styles.scss?inline';
 import template from './template.html?raw';
@@ -22,9 +27,29 @@ export interface NavbarMenu {
   end: NavbarItem[];
 }
 
+export class State extends ElementalComponentState<NavbarMenu> {
+  static defaultState<Type, K extends ValueObject<Type>>(): K {
+    return State.from({
+      start: [],
+      end: [],
+    }) as K;
+  }
+
+  validate() {
+    super.validate();
+    const isConsistent = hasValue(this.value) && Array.isArray(this.value.start) && Array.isArray(this.value.end);
+
+    if (!isConsistent) {
+      throw new StateIsNotConsistentException(this.constructor.name);
+    }
+  }
+}
+
 export class NavbarTemplateIsInvalidException extends Exception {}
 
-export class Navbar extends ElementalComponent<NavbarMenu> {
+export class Navbar extends StatefulElementalComponent<State> {
+  private readonly menuRenderedMap: Map<string, boolean> = new Map<string, boolean>();
+
   connectedCallback() {
     super.connectedCallback();
     const eventListeners: EventListenerRegistration[] = [];
@@ -45,8 +70,13 @@ export class Navbar extends ElementalComponent<NavbarMenu> {
     this.registerEventListeners(eventListeners);
   }
 
+  protected disconnectedCallback() {
+    super.disconnectedCallback();
+    this.menuRenderedMap.clear();
+  }
+
   render() {
-    if (!this.$template) {
+    if (!this.isConnected) {
       return;
     }
 
@@ -57,19 +87,25 @@ export class Navbar extends ElementalComponent<NavbarMenu> {
       throw new NavbarTemplateIsInvalidException();
     }
 
-    (this.$state?.start ?? []).forEach(menu => this.appendItem(menu, start));
-    (this.$state?.end ?? []).forEach(menu => this.appendItem(menu, end));
+    this.$state.value.start.forEach(menu => this.appendItem(menu, start));
+    this.$state.value.end.forEach(menu => this.appendItem(menu, end));
   }
 
   private appendItem(item: NavbarItem, position: Element) {
+    const text = item.toString();
+
+    if (this.menuRenderedMap.has(text)) {
+      return;
+    }
     const a = document.createElement('a');
 
     a.id = randomId();
     a.className = 'navbar-item';
-    a.textContent = item.toString();
-    a.href = toKebabCase(item.toString());
+    a.textContent = text;
+    a.href = toKebabCase(text);
 
     position.appendChild(a);
+    this.menuRenderedMap.set(text, true);
   }
 
   private onItemClickHandler(e: Event): void {
@@ -79,4 +115,4 @@ export class Navbar extends ElementalComponent<NavbarMenu> {
   }
 }
 
-ElementalComponent.register(Navbar, { template, styles });
+StatefulElementalComponent.register(Navbar, { template, styles });

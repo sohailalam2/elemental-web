@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers */
-import { deserialize, randomHex, serialize } from '@sohailalam2/abu';
-import { ElementalComponent } from '../../../src';
+import { deserialize, hasValue, randomHex, serialize, ValueObject } from '@sohailalam2/abu';
+import { StatefulElementalComponent, ElementalComponentState, StateIsNotConsistentException } from '../../../src';
 
 import styles from './styles.css?inline';
 import template from './template.html?raw';
@@ -10,7 +10,25 @@ interface HeroMessage {
   message: string;
 }
 
-export class Hero extends ElementalComponent<HeroMessage> {
+export class State extends ElementalComponentState<HeroMessage> {
+  static defaultState<Type, K extends ValueObject<Type>>(): K {
+    return State.from({
+      name: 'unknown',
+      message: 'unknown',
+    }) as K;
+  }
+
+  validate() {
+    super.validate();
+    const isConsistent = hasValue(this.value) && hasValue(this.value.name) && hasValue(this.value.message);
+
+    if (!isConsistent) {
+      throw new StateIsNotConsistentException(this.constructor.name);
+    }
+  }
+}
+
+export class Hero extends StatefulElementalComponent<State> {
   static get observedAttributes() {
     return ['name', 'tagline', 'state'];
   }
@@ -34,12 +52,6 @@ export class Hero extends ElementalComponent<HeroMessage> {
         isCustomEvent: true,
       },
     ]);
-
-    setTimeout(() => {
-      if (!this.name) {
-        this.setAttribute('name', 'Cat Woman🐱');
-      }
-    }, 2000);
   }
 
   protected render() {
@@ -50,10 +62,10 @@ export class Hero extends ElementalComponent<HeroMessage> {
     name.textContent = `I am ${this.name}`;
     tagline.textContent = this.tagline;
 
-    if (this.$state) {
+    if (this.$state.value.name !== 'unknown') {
       secret.textContent = `
-        ${this.$state.name} send a secret message.
-        ${this.$state.message}
+        ${this.$state.value.name} send a secret message.
+        ${this.$state.value.message}
       `;
     }
   }
@@ -75,9 +87,13 @@ export class Hero extends ElementalComponent<HeroMessage> {
     const msg: HeroMessage = deserialize((e as CustomEvent).detail);
 
     if (msg.name !== this.name) {
-      this.updateState(msg);
+      this.updateState(State.from(msg));
     }
+  }
+
+  protected deserialize(serialized: string | undefined): State {
+    return State.deserialize<HeroMessage, State>(serialized);
   }
 }
 
-ElementalComponent.register(Hero, { template, styles });
+StatefulElementalComponent.register(Hero, { template, styles });

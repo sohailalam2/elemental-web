@@ -1,4 +1,4 @@
-import { Class, debug, deserialize, hasValue, randomId, serialize } from '@sohailalam2/abu';
+import { Class, debug, hasValue, randomId } from '@sohailalam2/abu';
 
 import { ElementalComponentOptions } from './types';
 import { ElementalComponentPrefix } from './values';
@@ -13,10 +13,10 @@ import { DefaultEventController, EventController, EventListenerRegistration, Eve
 /**
  * ElementalComponent Class
  */
-export abstract class ElementalComponent<State = string> extends HTMLElement implements EventController {
+export abstract class ElementalComponent extends HTMLElement implements EventController {
   // list of attributes that will be made observable and for whom the attributeChangedCallback will be called
   static get observedAttributes(): string[] {
-    return ['state'];
+    return [];
   }
 
   public readonly tagName: string;
@@ -27,8 +27,6 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
 
   private readonly eventController: EventController;
 
-  private state: string | undefined = undefined;
-
   /**
    * ElementalComponent Constructor
    * @param options The configuration options for the component
@@ -36,11 +34,12 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
   constructor(private readonly options: ElementalComponentOptions = {}) {
     super();
     const className = this.constructor.name;
-    const isRegistered = ElementalComponentRegistry.isComponentRegisteredWithClassName(className);
 
-    if (!isRegistered) {
-      throw new ElementalComponentIsNotRegisteredException(className);
-    }
+    this.ensureComponentIsNotAlreadyRegistered(className);
+    this.configureAttributesAndProperties();
+
+    this.id = this.getAttribute('id') || options.id?.value || randomId();
+    this.tagName = ElementalComponentRegistry.generateTagNameForClassName(className);
 
     this.$root = options.noShadow
       ? this
@@ -49,65 +48,38 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
           mode: options.mode || ('open' as ShadowRootMode),
           delegatesFocus: options.delegatesFocus ?? true,
         });
-
-    this.configureAttributesAndProperties(ElementalComponent.observedAttributes);
-    this.configureAttributesAndProperties(this.getAttributeNames());
-
-    this.id = this.getAttribute('id') || options.id?.value || randomId();
-    this.tagName = ElementalComponentRegistry.generateTagNameForClassName(className);
-
     this.$template = this.setupTemplate(this.options?.templateId);
 
     this.eventController = new DefaultEventController(this);
     this.eventController.registerEventListeners(this.options?.eventHandlers || []);
+  }
 
-    if (hasValue(this.options?.state)) {
-      this.updateState(this.options?.state as State); // will auto-render when update is done
+  private ensureComponentIsNotAlreadyRegistered(className: string) {
+    const isRegistered = ElementalComponentRegistry.isComponentRegisteredWithClassName(className);
+
+    if (!isRegistered) {
+      throw new ElementalComponentIsNotRegisteredException(className);
     }
   }
 
-  public static register<T extends ElementalComponent<unknown>>(
-    element: Class<T>,
-    options?: RegistrationOptions,
-  ): void {
+  public static register<T extends ElementalComponent>(element: Class<T>, options?: RegistrationOptions): void {
     ElementalComponentRegistry.registerComponent(element, options);
   }
 
-  public static tagName<T extends ElementalComponent<unknown>>(
-    element: Class<T>,
-    prefix?: ElementalComponentPrefix,
-  ): string {
+  public static tagName<T extends ElementalComponent>(element: Class<T>, prefix?: ElementalComponentPrefix): string {
     return ElementalComponentRegistry.generateTagNameForElement(element, prefix);
   }
 
-  protected deserialize(serializedState: string | undefined): State {
-    return deserialize<State>(serializedState || 'undefined');
-  }
-
-  public get $state(): State {
-    return this.deserialize(this.state);
-  }
-
-  public updateState(value: State) {
-    if (hasValue(value)) {
-      this.setAttribute('state', serialize(value));
-    }
-  }
-
-  public cloneState(): State | undefined {
-    return this.deserialize(serialize(this.$state));
-  }
-
   public registerEventListeners(registrations: EventListenerRegistration[]) {
-    if (!this.options?.eventHandlers) {
+    if (!Array.isArray(this.options.eventHandlers)) {
       this.options.eventHandlers = [];
     }
     registrations.forEach(reg => {
-      if (!this.options?.eventHandlers?.includes(reg)) {
-        this.options?.eventHandlers?.push(reg);
+      if (!this.options.eventHandlers?.includes(reg)) {
+        this.options.eventHandlers?.push(reg);
       }
     });
-    this.eventController.registerEventListeners(this.options?.eventHandlers);
+    this.eventController.registerEventListeners(this.options.eventHandlers);
   }
 
   public deregisterEventListeners() {
@@ -178,7 +150,10 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
 
   protected abstract render(): void;
 
-  private configureAttributesAndProperties(attributes: string[]): void {
+  private configureAttributesAndProperties(): void {
+    const uniqueAttributes = new Set(ElementalComponent.observedAttributes.concat(this.getAttributeNames()));
+    const attributes = Array.from(uniqueAttributes);
+
     attributes.forEach(attribute => {
       if (!this.hasAttribute(attribute)) {
         this.setAttribute(attribute, '');
@@ -189,33 +164,7 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
   }
 
   private setupTemplate(templateId: string | undefined): HTMLTemplateElement {
-    let template: HTMLTemplateElement;
-
-    const proto = Object.getPrototypeOf(this.constructor.prototype);
-    const parentElement = proto.constructor as Class<ElementalComponent>;
-    const parentTagName = ElementalComponentRegistry.getRegisteredTagName(parentElement.name);
-    const tagName = ElementalComponentRegistry.generateTagNameForClassName(this.constructor.name);
-
-    if (templateId) {
-      template = document.getElementById(templateId) as HTMLTemplateElement;
-
-      if (!template) {
-        throw new ElementalComponentTemplateNotFoundException(templateId);
-      }
-    } else if (parentTagName) {
-      this.debug(`Component extends "${parentElement.name}"... checking template in parent`);
-
-      if (ElementalComponentRegistry.isTemplateRegistered(parentElement)) {
-        this.debug('Found a registered parent template');
-        template = document.getElementById(parentTagName) as HTMLTemplateElement;
-      } else {
-        this.debug('Checking any registered child template');
-        template = document.getElementById(tagName) as HTMLTemplateElement;
-      }
-    } else {
-      this.debug('Checking any registered template');
-      template = document.getElementById(tagName) as HTMLTemplateElement;
-    }
+    const template = this.getTemplateFromSomewhereIfPossible(templateId);
 
     if (template) {
       this.debug('Template found... cloning template to $root node');
@@ -223,6 +172,52 @@ export abstract class ElementalComponent<State = string> extends HTMLElement imp
     }
 
     return template;
+  }
+
+  private getTemplateFromSomewhereIfPossible(templateId: string | undefined): HTMLTemplateElement {
+    if (templateId) {
+      return this.findRegisteredTemplateById(templateId);
+    }
+
+    return this.findRegisteredParentTemplate() || this.findRegisteredTemplateByTagName();
+  }
+
+  private findRegisteredTemplateById(templateId: string) {
+    const template = document.getElementById(templateId) as HTMLTemplateElement;
+
+    if (!template) {
+      throw new ElementalComponentTemplateNotFoundException(templateId);
+    }
+
+    return template;
+  }
+
+  private findRegisteredTemplateByTagName() {
+    this.debug('Checking any registered child template');
+    const tagName = ElementalComponentRegistry.generateTagNameForClassName(this.constructor.name);
+
+    return document.getElementById(tagName) as HTMLTemplateElement;
+  }
+
+  private findRegisteredParentTemplate() {
+    const proto = Object.getPrototypeOf(this.constructor.prototype);
+    const parentElement = proto.constructor as Class<ElementalComponent>;
+
+    if (!parentElement) {
+      return null;
+    }
+    this.debug(`Component extends parent component "${parentElement.name}"`);
+
+    if (!ElementalComponentRegistry.isTemplateRegistered(parentElement)) {
+      this.debug(`Parent component "${parentElement.name}" does not have a registered template`);
+
+      return null;
+    }
+
+    this.debug(`Parent component "${parentElement.name}" has a registered template`);
+    const parentTagName = ElementalComponentRegistry.getRegisteredTagName(parentElement.name) as string;
+
+    return document.getElementById(parentTagName) as HTMLTemplateElement;
   }
 
   private debug(message?: string, ...optionalParams: unknown[]) {
