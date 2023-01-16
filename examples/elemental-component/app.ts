@@ -1,19 +1,24 @@
 import './inheritance';
-import { Navbar, NavbarItem, NavbarMenu, State } from './navbar';
-
-// Initialize the elemental components
-const menu: NavbarMenu = {
-  start: [NavbarItem.from('Batman🦇'), NavbarItem.from('Robin🐦'), NavbarItem.from('Cat Woman🐱')],
-  end: [NavbarItem.from('Login'), NavbarItem.from('Signup')],
-};
-
-const navbar = new Navbar({ state: State.from<NavbarMenu, State>(menu) });
+import { navbar } from './navbar';
+import { magician } from './magician';
 
 // 👌 add the components to the document body to render
 document.body.prepend(navbar);
 
 document.body.innerHTML += `
-<el-hero id="one" name="Batman🦇" tagline="The protector of Gotham!"></el-hero>
-<el-hero-sidekick name="Robin🐦" tagline="I was lost, but now I am found."></el-hero-sidekick>
-<el-hero-sidekick name="Cat Woman🐱" tagline="I ❤ Batman"></el-hero-sidekick>
+<div style="display: flex; margin-top: 4%;">
+    <p>Hello World! This is a regular paragraph, not an elemental component.</p>
+</div>
+<hr />
+`;
+
+document.body.appendChild(magician);
+
+document.body.innerHTML += `
+<hr />
+<div style="display: flex; justify-content: center; column-gap: 5%">
+  <el-hero id="one" name="Batman🦇" tagline="The protector of Gotham!"></el-hero>
+  <el-hero-sidekick name="Robin🐦" tagline="I was lost, but now I am found."></el-hero-sidekick>
+  <el-hero-sidekick name="Cat Woman🐱" tagline="I ❤ Batman"></el-hero-sidekick>
+</div>
 `;
