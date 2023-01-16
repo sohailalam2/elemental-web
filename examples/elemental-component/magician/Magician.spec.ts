@@ -1,9 +1,9 @@
-import { beforeEach, describe, expect, it } from 'vitest';
 import * as crypto from 'crypto';
-
 Object.defineProperty(globalThis, 'crypto', { value: { webcrypto: crypto.webcrypto } });
 
-import { Magician, MagicianName, State, MagicianSuperPower } from './index';
+import { beforeEach, describe, expect, it } from 'vitest';
+
+import { Magician, MagicianName, MagicianSuperPower, State } from './index';
 
 describe('Magician', () => {
   let state: State;
@@ -42,12 +42,10 @@ describe('Magician', () => {
   });
 
   it('should render a magician', () => {
-    const html = `
-<section>
-  <p slot="name" part="name">${state.value.name.value}</p>
-  <p slot="superpower" part="superpower">${state.value.superpower.value}</p>
-</section>`;
+    const name = magician.$root.querySelector('p[part=name]') as HTMLParagraphElement;
+    const superpower = magician.$root.querySelector('p[part=superpower]') as HTMLParagraphElement;
 
-    expect(magician.$root.innerHTML.trim()).toEqual(html.trim());
+    expect(name.textContent).toEqual(state.value.name.value);
+    expect(superpower.textContent).toEqual(state.value.superpower.value);
   });
 });
