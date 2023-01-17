@@ -1,0 +1,1 @@
+import{_ as s,c as a,o as n,a as e}from"./app.ee22a17e.js";const u=JSON.parse('{"title":"FAQ","description":"","frontmatter":{},"headers":[],"relativePath":"faq/index.md"}'),p={name:"faq/index.md"},o=e("",7),l=[o];function r(t,c,i,y,d,E){return n(),a("div",null,l)}const h=s(p,[["render",r]]);export{u as __pageData,h as default};
