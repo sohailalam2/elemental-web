@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/sohailalam2/elemental-web/compare/v0.2.8...v0.3.0) (2023-01-17)
+
 ### [0.2.8](https://github.com/sohailalam2/elemental-web/compare/v0.2.7...v0.2.8) (2023-01-17)
 
 ### Features
