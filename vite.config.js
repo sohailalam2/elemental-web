@@ -7,6 +7,7 @@ import pkg from './package.json';
 
 const name = pkg.name.split('/')[1];
 
+// eslint-disable-next-line security/detect-non-literal-fs-filename
 const entryMap = readdirSync(join(__dirname, 'src'))
   .filter(dir => !dir.includes('.'))
   .concat([name])
@@ -32,6 +33,7 @@ function getFileName(fmt, n) {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const isProduction = env.NODE_ENV === 'production';
+  const isTest = env.NODE_ENV === 'test' || env.NODE_ENV === 'ci';
 
   return {
     build: {
@@ -54,17 +56,21 @@ export default defineConfig(({ mode }) => {
       __LIB_NAME__: JSON.stringify(env.npm_package_name),
       __LIB_VERSION__: JSON.stringify(env.npm_package_version),
       __ENVIRONMENT__: JSON.stringify(env.NODE_ENV),
-      __ABU_DEBUG__: JSON.stringify(true), // to enable or disable debug mode using Abu
+      __ABU_DEBUG__: JSON.stringify(!isProduction && !isTest), // to enable or disable debug mode using Abu
     },
-    resolve: { alias: { '@': resolve(__dirname, 'src') }, mainFields: ['browser', 'module', 'jsnext:main', 'jsnext'] },
+    resolve: {
+      alias: { '@': resolve(__dirname, 'src') },
+      mainFields: ['browser', 'module', 'jsnext:main', 'jsnext'],
+    },
     server: { watch: { usePolling: true } },
     test: {
       coverage: {
         provider: 'istanbul',
-        reporter: ['text', 'json', 'html'],
+        reporter: ['text', 'html'],
       },
       environment: 'happy-dom',
-      includeSource: ['src/**/*.{js,ts}'],
+      include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+      includeSource: ['src/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     },
   };
 });
