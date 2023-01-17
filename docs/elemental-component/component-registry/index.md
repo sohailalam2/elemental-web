@@ -1,7 +1,7 @@
 # Elemental Component Registry
 
-The registry implementation that simplifies how we register a custom element or a template.
-It also exposes a bunch of other helper methods, all of which are public and static.
+The ElementalComponentRegistry simplifies the process of registering a custom element or a template, and offers a variety
+of other helpful public and static methods.
 
 ::: info Default Prefix
 The `ElementalComponentRegistry` uses the text `el` _(stands for elemental)_ as the default prefix
@@ -10,8 +10,7 @@ for all purposes.
 
 ## Changing the default prefix
 
-By default, ElementalComponent will register components with a prefix `el` however, this can be changed by
-using the following method:
+The default prefix for ElementalComponent is "el," however, it can be customized by using the provided method:
 
 ```ts
 ElementalComponentRegistry.setDefaultPrefix(

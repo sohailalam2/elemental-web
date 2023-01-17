@@ -63,6 +63,10 @@ describe('ElementalComponent Lifecycle Hooks', () => {
 
   it('should invoke lifecycle hook attributeChangedCallback', () => {
     class MyComponentAttributeChange extends MyComponent {
+      static get observedAttributes(): string[] {
+        return super.observedAttributes.concat(['state']);
+      }
+
       public attributeChangedCallback(name: string, oldVal: string | null, newVal: string | null) {
         super.attributeChangedCallback(name, oldVal, newVal);
       }
@@ -74,7 +78,7 @@ describe('ElementalComponent Lifecycle Hooks', () => {
 
     vi.spyOn(component, 'attributeChangedCallback').mockImplementation(mock);
     document.body.appendChild(component);
-    component.updateState('updated');
+    component.setAttribute('state', 'updated');
 
     expect(mock).toHaveBeenCalledOnce();
   });

@@ -9,7 +9,7 @@ All custom elements MUST be registered before they can be instantiated, not doin
 Register your components before you use. Register them even if you only declare them in HTML pages.
 :::
 
-> Read more about [component registration here](./component-registry/component-registration.md).
+> Read more about [component registration here](/elemental-component/component-registry/component-registration.md).
 
 ### Usage
 
@@ -33,9 +33,9 @@ ElementalComponent.register(ButtonCounter, {
 
 #### Configure a default custom prefix
 
-By default, ElementalComponent uses `el` as the default prefix. You can optionally change this to
-your liking as shows below. Once the default prefix is changed, any further components being registered
-will use the new default prefix without you having to explicitly pass it during the registration process.
+The default prefix for ElementalComponent is `el`. This can be customized to suit your preferences as shown below.
+Subsequently, any additional components registered will utilize the newly set default prefix without the need for
+explicit inclusion during the registration process.
 
 ```ts
 ElementalComponentRegistry.setDefaultPrefix(ElementalComponentPrefix.from('my'));
@@ -43,7 +43,7 @@ ElementalComponentRegistry.setDefaultPrefix(ElementalComponentPrefix.from('my'))
 
 ## Template Registration
 
-> Read more about [template registration here](./component-registry/template-registration.md).
+> Read more about [template registration here](/elemental-component/component-registry/template-registration.md).
 
 ### Usage
 
@@ -72,24 +72,20 @@ ElementalComponent.register(ButtonCounter, {
 ```
 
 ::: tip 💁 `this.$template`
-If a template is registered or is autodetected by `ElementalComponent` during the
-component instantiation, then its content will be made available via the readonly
-instance property `$template`.
+When a template is registered or detected by ElementalComponent during component instantiation,
+it can be accessed through the read-only instance property `$template`.
 :::
 
 #### Link a different template
 
-Let's say we already have a template registered in the DOM with an id of `custom-template`.
-If we choose to create an element that uses this existing template instead of creating (or registering)
-a new template, then we can simply pass the `templateId` during the instantiation of
-the component and at runtime, the component will use the given template.
+If a template with the id for example, "custom-template" is already present in the DOM, it can be utilized during the
+instantiation of an elemental component by passing the `templateId` parameter. The component will then use the specified template at runtime.
 
-If no such template is found, an `ElementalComponentNoSuchTemplateFoundException` will be thrown.
+If a template is not found registered by that id, an exception `ElementalComponentNoSuchTemplateFoundException` will be thrown.
 
 ::: warning It's a reference not a copy
-If a `templateId` is provided and a template with such an id already exists, then the
-component will try to directly use the content of the given template instead of copying and creating
-its own template first.
+When a `templateId` is supplied, and a corresponding template is found within the DOM,
+ElementalComponent will utilize the content of that template directly, as opposed to creating a new copy.
 :::
 
 ```ts
@@ -100,9 +96,8 @@ const myButton = new ButtonCounter({
 });
 ```
 
-The templateId can also be passed during the registration process to use that as the template,
-but in that case the template will be copied into a new template with the id that of the
-element's tagName.
+The `templateId` can be passed during the registration process to use as the template for the element.
+In this scenario, the template will be copied and assigned the id of the element's `tagName`.
 
 ```ts
 ElementalComponent.register(ButtonCounter, {

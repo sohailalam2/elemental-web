@@ -1,0 +1,21 @@
+:host {
+  margin: 0;
+  padding: 0;
+
+  // Declare all variables with default values
+  --magician-name-color: #155f3e;
+  --magician-superpower-color: var(--magician-name-color);
+  --magician-font-weight: bold;
+  --magician-font-size: 2em;
+}
+
+::part(name) {
+  font-weight: var(--magician-font-weight);
+  font-size: var(--magician-font-size);
+  color: var(--magician-name-color);
+}
+
+::part(superpower) {
+  font-size: calc(0.6 * var(--magician-font-size));
+  color: var(--magician-superpower-color);
+}

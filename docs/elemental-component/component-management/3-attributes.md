@@ -2,9 +2,9 @@
 
 ## Attributes and Properties
 
-When a new attribute is added to the component, ElementalComponent automatically exposes the attribute
-as a class property and if that attribute is made observable, then the attribute and property will
-be kept in sync.
+When a new attribute is added to the component, `ElementalComponent` automatically exposes it as a class property.
+If the attribute is designated as observable by overriding the `observedAttributes` getter, the attribute and property
+will remain in sync with any data updates.
 
 ### Example
 

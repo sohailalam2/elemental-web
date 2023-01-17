@@ -1,12 +1,15 @@
 # Component Registration
 
+The registration capabilities offered by `ElementalComponentRegistry` are also available through `ElementalComponent`.
+Therefore, it is not mandatory to use the Registry to register your components and templates. The static method `register()` provided by `ElementalComponent` can also be used to register components directly.
+
 ## Register a Component
 
 All custom elements MUST be registered before they can be instantiated, not doing so will result in an
 `ElementalComponentIsNotRegisteredException` exception.
 
 ::: warning 👺 Register Your Component
-Register your components before you use. Register them even if you only declare them in HTML pages.
+Register your components before you use.
 :::
 
 ### Method Signature
@@ -23,36 +26,13 @@ All custom elements when instantiated will get an auto-generated `id` if one is 
 
 ### RegistrationOptions
 
-```ts
-interface RegistrationOptions {
-  prefix?: ElementalComponentPrefix;
-
-  /**
-   * The ID of the template that should be used as a template for this component
-   *
-   * This option allows us to reuse existing templates
-   */
-  templateId?: string;
-
-  /**
-   * The template HTML that should be registered along with the template registration
-   */
-  template?: string;
-
-  /**
-   * Styles that will be registered as a style element in the component root
-   */
-  styles?: string;
-
-  /**
-   * @deprecated
-   *
-   * The extension of native HTML components is not supported by Safari.
-   * The team has decided to not support it in the future either. So use this functionality with caution
-   */
-  extends?: string;
-}
-```
+| Option     | Type                       | Description                                                                                                                                                                                                     |
+| ---------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| prefix     | `ElementalComponentPrefix` | The custom prefix for the element. Defaults to `el-` prefix                                                                                                                                                     |
+| templateId | `string`                   | The ID of the template that should be used as a template for this component This option allows us to reuse existing templates                                                                                   |
+| template   | `string`                   | The template HTML that should be registered along with the template registration.                                                                                                                               |
+| styles     | `string`                   | Styles that will be registered as a style element in the component root                                                                                                                                         |
+| extends    | `string`                   | 👺 `deprecated` do NOT use! <br/> <br/> The extension of native HTML components is not supported by Safari. The team has decided to not support it in the future either. So use this functionality with caution |
 
 ### Usage
 
@@ -75,8 +55,8 @@ ElementalComponentRegistry.register(ButtonCounter, {
 ```
 
 ::: tip 💁 Register any `HTMLElement`
-Not so surprising is that you can use the `register()` method to register _any_ `HTMLElement` and not necessarily
-restricted to using `ElementalComponent` and you will still benefit from its usage :)
+It may come as no surprise that the `register()` method can be used to register any `HTMLElement`, and is not limited to just `ElementalComponent`.
+So, don't be shy, go ahead and give it a try, you'll be amazed at how much it can benefit you! :)
 :::
 
 #### Registering a component and a template together

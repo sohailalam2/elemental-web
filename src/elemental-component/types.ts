@@ -1,14 +1,8 @@
 import { ElementalComponentId } from './values';
 import { EventListenerRegistration } from './controller';
+import { ElementalComponentState } from './ElementalComponentState';
 
 export interface ElementalComponentOptions {
-  /**
-   * Each `ElementalComponent` by defaults gets an internal `state` of type that
-   * was declared in the component definition. The state can be access using the
-   * `this.$state` property.
-   */
-  state?: unknown;
-
   /**
    * An optional `id` for the instance of the custom element.
    * An alphanumeric ID will be auto generated if one is not provided here.
@@ -50,4 +44,13 @@ export interface ElementalComponentOptions {
    * This option allows us to reuse existing templates
    */
   templateId?: string;
+}
+
+export interface StatefulElementalComponentOptions extends ElementalComponentOptions {
+  /**
+   * Each `ElementalComponent` by defaults gets an internal `state` of type that
+   * was declared in the component definition. The state can be access using the
+   * `this.$state` property.
+   */
+  state?: ElementalComponentState<unknown>;
 }

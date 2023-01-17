@@ -8,7 +8,7 @@ import {
   RegistrationOptions,
   ElementalComponentRegistry,
   ElementalComponentIsNotRegisteredException,
-  ElementalComponentNoSuchTemplateFoundException,
+  ElementalComponentTemplateNotFoundException,
   ElementalComponentTemplateCanNotBeEmptyException,
 } from '../registry';
 
@@ -31,8 +31,6 @@ describe('ElementalComponent Registration', () => {
 
   it('should throw ElementalComponentNotRegisteredException', () => {
     class MyComponentNotRegistered extends MyComponent {}
-    // NOTE: unfortunately this test fails in jsdom due to its internal implementation so run it using happy-dom
-    // JS DOM throws a TypeError: Invalid constructor, possibly because it doesn't support extending html elements
     expect(() => new MyComponentNotRegistered()).toThrow(ElementalComponentIsNotRegisteredException);
   });
 
@@ -84,7 +82,7 @@ describe('ElementalComponent Registration', () => {
     const options: RegistrationOptions = { templateId: `not-found` };
 
     expect(() => ElementalComponent.register(MyComponentWithTemplateIdNotFound, options)).toThrow(
-      ElementalComponentNoSuchTemplateFoundException,
+      ElementalComponentTemplateNotFoundException,
     );
   });
 
@@ -109,7 +107,7 @@ describe('ElementalComponent Registration', () => {
     ElementalComponent.register(MyInstanceWithTemplateIdNotFound);
 
     expect(() => new MyInstanceWithTemplateIdNotFound({ templateId: 'not-found' })).toThrow(
-      ElementalComponentNoSuchTemplateFoundException,
+      ElementalComponentTemplateNotFoundException,
     );
   });
 
