@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.8](https://github.com/sohailalam2/elemental-web/compare/v0.2.7...v0.2.8) (2023-01-17)
+
+### Features
+
+- add stateful elemental component feature and update examples ([aac3151](https://github.com/sohailalam2/elemental-web/commit/aac3151514809b326fae057b7abbcc7df351f124))
+
+### Bug Fixes
+
+- failing test, move crypto property on top ([08a4164](https://github.com/sohailalam2/elemental-web/commit/08a416492dcb23f53bbbf1b19915722cf1e75d04))
+- failing test, trim before comparing html ([64afea2](https://github.com/sohailalam2/elemental-web/commit/64afea23b4f7ecca904c7ff7610835a024d4c3cc))
+
 ### [0.2.7](https://github.com/sohailalam2/elemental-web/compare/v0.2.6...v0.2.7) (2022-12-21)
 
 ### [0.2.6](https://github.com/sohailalam2/elemental-web/compare/v0.2.5...v0.2.6) (2022-12-19)
