@@ -1,0 +1,1 @@
+import{_ as e,c as a,o as s,a as n}from"./app.84e59d72.js";const t="/logo.svg",_=JSON.parse('{"title":"Getting Started","description":"","frontmatter":{},"headers":[],"relativePath":"get-started.md"}'),o={name:"get-started.md"},r=n("",9),l=[r];function i(c,d,p,h,m,u){return s(),a("div",null,l)}const g=e(o,[["render",i]]);export{_ as __pageData,g as default};
