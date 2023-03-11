@@ -10,7 +10,7 @@ import { toKebabCase } from '@sohailalam2/abu';
 import { ShadowRoot } from 'happy-dom';
 
 import { ElementalComponentOptions } from '../types';
-import { ElementalComponent } from '../ElementalComponent';
+import { ElementalComponent } from '../component/ElementalComponent';
 import { ElementalComponentId, ElementalComponentPrefix } from '../values';
 
 describe('ElementalComponent', () => {

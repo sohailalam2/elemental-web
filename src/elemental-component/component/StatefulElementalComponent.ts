@@ -1,6 +1,6 @@
 import { hasValue } from '@sohailalam2/abu';
 
-import { StatefulElementalComponentOptions } from './types';
+import { StatefulElementalComponentOptions } from '../types';
 import { ElementalComponent } from './ElementalComponent';
 import { ElementalComponentState } from './ElementalComponentState';
 

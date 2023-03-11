@@ -5,7 +5,10 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 Object.defineProperty(globalThis, 'crypto', { value: { webcrypto: crypto.webcrypto } });
 
-import { ElementalComponentState, MustOverrideStaticDefaultStateMethodException } from '../ElementalComponentState';
+import {
+  ElementalComponentState,
+  MustOverrideStaticDefaultStateMethodException,
+} from '../component/ElementalComponentState';
 import { ValueObject } from '@sohailalam2/abu';
 
 describe('ElementalComponentState', () => {

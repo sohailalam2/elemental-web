@@ -1,7 +1,7 @@
 import { Class } from '@sohailalam2/abu';
 
 import { RegistrationOptions } from '../registry';
-import { ElementalComponent } from '../ElementalComponent';
+import { ElementalComponent } from '../component';
 
 import { ObservedState } from './ObservedState';
 import { StateDecoratorMetadataValue } from './types';

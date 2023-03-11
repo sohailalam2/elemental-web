@@ -1,6 +1,6 @@
 import { ObservedState } from './ObservedState';
 import { EventListener } from './EventListener';
-import { ElementalComponent } from '../ElementalComponent';
+import { ElementalComponent } from '../component/ElementalComponent';
 import {
   DecoratorMetadataValue,
   EventListenerDecoratorMetadataValue,

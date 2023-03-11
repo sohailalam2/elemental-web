@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { ElementalComponentOptions } from '../types';
 import { ElementalComponentPrefix } from '../values';
-import { ElementalComponent } from '../ElementalComponent';
+import { ElementalComponent } from '../component/ElementalComponent';
 import {
   RegistrationOptions,
   ElementalComponentRegistry,

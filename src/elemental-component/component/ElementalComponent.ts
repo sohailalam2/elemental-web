@@ -1,20 +1,20 @@
 import { Class, debug, hasValue, randomId } from '@sohailalam2/abu';
 
-import { ElementalComponentOptions } from './types';
-import { ElementalComponentPrefix } from './values';
+import { ElementalComponentOptions } from '../types';
+import { ElementalComponentPrefix } from '../values';
 import {
   RegistrationOptions,
   ElementalComponentRegistry,
   ElementalComponentIsNotRegisteredException,
   ElementalComponentTemplateNotFoundException,
-} from './registry';
-import { DefaultEventController, EventController, EventListenerRegistration, EventOptions } from './controller';
+} from '../registry';
+import { DefaultEventController, EventController, EventListenerRegistration, EventOptions } from '../controller';
 import {
   DecoratorProcessor,
   EventListener,
   DecoratorMetadataValue,
   EventListenerDecoratorMetadataValue,
-} from './decorators';
+} from '../decorators';
 
 /**
  * ElementalComponent Class
@@ -98,6 +98,16 @@ export abstract class ElementalComponent extends HTMLElement implements EventCon
 
   public static tagName<T extends ElementalComponent>(element: Class<T>, prefix?: ElementalComponentPrefix): string {
     return ElementalComponentRegistry.generateTagNameForElement(element, prefix);
+  }
+
+  public $<E extends Element, B extends boolean = false>(
+    selector: string,
+    selectMultiple?: B,
+    // eslint-disable-next-line no-undef
+  ): B extends true ? NodeListOf<E> | null : E | null {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return selectMultiple ? this.$root.querySelectorAll<E>(selector) : this.$root.querySelector<E>(selector);
   }
 
   public registerEventListeners(registrations: EventListenerRegistration[]) {

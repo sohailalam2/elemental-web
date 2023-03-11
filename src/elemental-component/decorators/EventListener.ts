@@ -1,5 +1,5 @@
 import { DecoratorProcessor } from '../decorators';
-import { ElementalComponent } from '../ElementalComponent';
+import { ElementalComponent } from '../component/ElementalComponent';
 import { EventListenerDecorator, EventListenerDecoratorOptions } from './types';
 
 export function EventListener(eventName: string, options?: EventListenerDecoratorOptions): EventListenerDecorator {

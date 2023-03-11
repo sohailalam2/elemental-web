@@ -1,4 +1,4 @@
-import { ElementalComponent } from '../ElementalComponent';
+import { ElementalComponent } from '../component/ElementalComponent';
 
 import { DecoratorProcessor } from './DecoratorProcessor';
 
