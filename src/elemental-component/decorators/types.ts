@@ -26,3 +26,7 @@ export type EventListenerDecoratorMetadataValue = EventListenerDecoratorOptions 
   DecoratorMetadataValue & {
     handlerName: string;
   };
+
+export type StateDecoratorMetadataValue = DecoratorMetadataValue & {
+  propertyKey: string;
+};

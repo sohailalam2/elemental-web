@@ -1,9 +1,11 @@
+import { ObservedState } from './ObservedState';
 import { EventListener } from './EventListener';
 import { ElementalComponent } from '../ElementalComponent';
 import {
   DecoratorMetadataValue,
   EventListenerDecoratorMetadataValue,
   EventListenerDecoratorOptionsWithName,
+  StateDecoratorMetadataValue,
 } from './types';
 
 export class DecoratorProcessor {
@@ -14,8 +16,35 @@ export class DecoratorProcessor {
     // utility class, should not be initialized
   }
 
-  public static getAllDecoratorMetadata(target: ElementalComponent): DecoratorMetadataValue[] {
-    return DecoratorProcessor.CACHE.get(target.constructor.name) || [];
+  public static getAllDecoratorMetadata(
+    target: ElementalComponent,
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    filterMetadata?: Function,
+  ): DecoratorMetadataValue[] {
+    if (!target) {
+      return [];
+    }
+    let decorators = DecoratorProcessor.CACHE.get(target.constructor.name) || [];
+
+    if (filterMetadata) {
+      decorators = decorators.filter(d => d.decoratorName === filterMetadata.name);
+    }
+    // get parent decorators recursively
+    const clazz = Object.getPrototypeOf(target);
+
+    if (clazz) {
+      const parentDecorators = DecoratorProcessor.getAllDecoratorMetadata(clazz.constructor.prototype, filterMetadata);
+
+      decorators.push(...parentDecorators);
+    }
+
+    return decorators;
+  }
+
+  public static defineStateMetadata(propertyKey: string, target: ElementalComponent) {
+    const value: StateDecoratorMetadataValue = { propertyKey, decoratorName: ObservedState.name };
+
+    DecoratorProcessor.addDecoratorMetadata(target.constructor.name, value);
   }
 
   public static defineEventListenerMetadata(

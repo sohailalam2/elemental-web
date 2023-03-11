@@ -4,6 +4,7 @@ import { deserialize, hasValue, randomHex, serialize, ValueObject } from '@sohai
 import {
   Component,
   EventListener,
+  ObservedState,
   ElementalComponentState,
   StatefulElementalComponent,
   StateIsNotConsistentException,
@@ -37,12 +38,10 @@ export class State extends ElementalComponentState<HeroMessage> {
 
 @Component({ template, styles })
 export class Hero extends StatefulElementalComponent<State> {
-  static get observedAttributes() {
-    return ['name', 'tagline', 'state'];
-  }
-
+  @ObservedState
   name = '';
 
+  @ObservedState
   tagline = '';
 
   protected render() {
@@ -77,7 +76,7 @@ export class Hero extends StatefulElementalComponent<State> {
   protected onUpdateTextHandler(e: Event): void {
     const msg: HeroMessage = deserialize((e as CustomEvent).detail);
 
-    if (msg.name !== this.name) {
+    if (msg && msg.name !== this.name) {
       this.updateState(State.from(msg));
     }
   }

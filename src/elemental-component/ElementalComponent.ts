@@ -25,6 +25,8 @@ export abstract class ElementalComponent extends HTMLElement implements EventCon
     return [];
   }
 
+  public static readonly IS_ELEMENTAL_COMPONENT = true;
+
   public readonly tagName: string;
 
   public readonly $root: Element | ShadowRoot;
@@ -157,21 +159,9 @@ export abstract class ElementalComponent extends HTMLElement implements EventCon
 
   private processDecorators(): void {
     // get component decorators
-    const decorators: DecoratorMetadataValue[] = DecoratorProcessor.getAllDecoratorMetadata(this);
-    // get parent decorators
-    const proto = Object.getPrototypeOf(this.constructor.prototype);
-    const parentElement = proto.constructor as Class<ElementalComponent>;
+    const decorators: DecoratorMetadataValue[] = DecoratorProcessor.getAllDecoratorMetadata(this, EventListener);
 
-    if (parentElement) {
-      this.debug(`Component extends parent component "${parentElement.name}"`);
-      const parentDecorators: DecoratorMetadataValue[] = DecoratorProcessor.getAllDecoratorMetadata(proto);
-
-      if (Array.isArray(parentDecorators)) {
-        decorators.push(...parentDecorators);
-      }
-    }
-    // process the event listener decorators
-    this.processEventListenerDecorators(decorators.filter(m => m.decoratorName === EventListener.name));
+    this.processEventListenerDecorators(decorators);
   }
 
   private processEventListenerDecorators(metadata: DecoratorMetadataValue[]) {
