@@ -6,7 +6,7 @@ export class MustOverrideStaticDefaultStateMethodException extends Exception {}
 
 export class ElementalComponentState<T> extends ValueObject<T> {
   static defaultState<Type, K extends ValueObject<Type>>(): K {
-    throw new MustOverrideStaticDefaultStateMethodException(this.prototype?.constructor?.name);
+    throw new MustOverrideStaticDefaultStateMethodException(this.name);
   }
 
   static deserializationMapper(): ValueObjectDeserializationMapper | undefined {
