@@ -1,5 +1,5 @@
 import { ElementalComponentId } from './values';
-import { EventListenerRegistration } from './controller';
+import { EventListenerRegistration } from './event';
 import { ElementalComponentState } from './component/ElementalComponentState';
 
 export interface ElementalComponentOptions {

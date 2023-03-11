@@ -9,9 +9,9 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { toKebabCase } from '@sohailalam2/abu';
 import { ShadowRoot } from 'happy-dom';
 
-import { ElementalComponentOptions } from '../types';
-import { ElementalComponent } from '../component/ElementalComponent';
-import { ElementalComponentId, ElementalComponentPrefix } from '../values';
+import { ElementalComponentOptions } from '../../types';
+import { ElementalComponent } from '../ElementalComponent';
+import { ElementalComponentId, ElementalComponentPrefix } from '../../values';
 
 describe('ElementalComponent', () => {
   abstract class MyComponent extends ElementalComponent {

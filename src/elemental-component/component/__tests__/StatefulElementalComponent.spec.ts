@@ -8,8 +8,8 @@ Object.defineProperty(globalThis, 'crypto', { value: { webcrypto: crypto.webcryp
 import { beforeEach, describe, expect, it } from 'vitest';
 import { toKebabCase, ValueObject } from '@sohailalam2/abu';
 
-import { StatefulElementalComponentOptions } from '../types';
-import { ElementalComponentState, StatefulElementalComponent, StateIsNotConsistentException } from '../';
+import { StatefulElementalComponentOptions } from '../../types';
+import { ElementalComponentState, StatefulElementalComponent, StateIsNotConsistentException } from '../.';
 
 describe('StatefulElementalComponent', () => {
   class MyComponentState extends ElementalComponentState<string> {}

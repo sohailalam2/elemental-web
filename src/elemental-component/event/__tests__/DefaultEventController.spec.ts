@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment, no-magic-numbers */
 import { describe, expect, it, vi } from 'vitest';
 
-import { ElementalComponentRegistry } from '../registry';
-import { EventListenerRegistration } from './types';
-import { DefaultEventController, ElementalComponentCustomEventHandlerIsNotDefined } from './';
+import { ElementalComponentRegistry } from '../../registry';
+import { EventListenerRegistration } from '../types';
+import { DefaultEventController, ElementalComponentCustomEventHandlerIsNotDefined } from '../';
 
 describe('DefaultEventController', () => {
   it('should throw exception when both handler and handlerName are missing', () => {

@@ -1,16 +1,16 @@
 /* eslint-disable  @typescript-eslint/ban-ts-comment, no-console, max-classes-per-file */
 import { describe, expect, it } from 'vitest';
 
-import { ElementalComponentOptions } from '../types';
-import { ElementalComponentPrefix } from '../values';
-import { ElementalComponent } from '../component/ElementalComponent';
+import { ElementalComponentOptions } from '../../types';
+import { ElementalComponentPrefix } from '../../values';
+import { ElementalComponent } from '../ElementalComponent';
 import {
   RegistrationOptions,
   ElementalComponentRegistry,
   ElementalComponentIsNotRegisteredException,
   ElementalComponentTemplateNotFoundException,
   ElementalComponentTemplateCanNotBeEmptyException,
-} from '../registry';
+} from '../../registry';
 
 // we need to define webcrypto because Abu uses it to generate the random numbers
 // and this is not available in the simulated DOM test environment

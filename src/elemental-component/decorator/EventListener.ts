@@ -1,4 +1,4 @@
-import { DecoratorProcessor } from '../decorators';
+import { DecoratorProcessor } from '../decorator';
 import { ElementalComponent } from '../component/ElementalComponent';
 import { EventListenerDecorator, EventListenerDecoratorOptions } from './types';
 

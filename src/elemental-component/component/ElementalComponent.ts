@@ -8,13 +8,13 @@ import {
   ElementalComponentIsNotRegisteredException,
   ElementalComponentTemplateNotFoundException,
 } from '../registry';
-import { DefaultEventController, EventController, EventListenerRegistration, EventOptions } from '../controller';
+import { DefaultEventController, EventController, EventListenerRegistration, EventOptions } from '../event';
 import {
   DecoratorProcessor,
   EventListener,
   DecoratorMetadataValue,
   EventListenerDecoratorMetadataValue,
-} from '../decorators';
+} from '../decorator';
 
 /**
  * ElementalComponent Class

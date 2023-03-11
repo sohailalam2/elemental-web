@@ -2,8 +2,8 @@
 /* eslint-disable  @typescript-eslint/no-unused-vars */
 import { describe, expect, it, vi } from 'vitest';
 
-import { ElementalComponentOptions } from '../types';
-import { ElementalComponent } from '../component/ElementalComponent';
+import { ElementalComponentOptions } from '../../types';
+import { ElementalComponent } from '../ElementalComponent';
 
 // we need to define webcrypto because Abu uses it to generate the random numbers
 // and this is not available in the simulated DOM test environment

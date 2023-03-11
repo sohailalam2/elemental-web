@@ -1,5 +1,5 @@
+import { CustomObject } from '@sohailalam2/abu';
 import { ElementalComponent, EventListenerRegistration } from '@/elemental-component';
-import { CustomObject } from '@sohailalam2/abu/dist/utils/types';
 
 export type EventListenerDecorator = (target: ElementalComponent, key: string, descriptor: PropertyDescriptor) => void;
 
