@@ -1,7 +1,8 @@
-import { ElementalComponent } from '../../../src';
+import { Component } from '../../../src';
 
 import { Hero } from './Hero';
 
+@Component()
 export class HeroSidekick extends Hero {
   protected connectedCallback() {
     super.connectedCallback();
@@ -10,5 +11,3 @@ export class HeroSidekick extends Hero {
     tagline.classList.add('sidekick-tagline');
   }
 }
-
-ElementalComponent.register(HeroSidekick);

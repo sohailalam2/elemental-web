@@ -20,7 +20,9 @@
     },
     "types": ["vite/client", "vitest/importMeta"],
     "outDir": "dist",
-    "declaration": true
+    "declaration": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": ["src"]
 }

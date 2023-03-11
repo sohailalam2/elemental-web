@@ -21,6 +21,41 @@ export interface EventOptions {
   composed?: boolean;
 }
 
+export interface EventCaptureOptions {
+  /**
+   * A boolean value indicating that events of this type will be
+   * dispatched to the registered listener before being dispatched
+   * to any EventTarget beneath it in the DOM tree. If not specified,
+   * defaults to `true`.
+   */
+  capture?: boolean;
+
+  /**
+   * A boolean value that, if true, indicates that the function specified
+   * by listener will never call preventDefault(). If a passive listener
+   * does call preventDefault(), the user agent will do nothing other than
+   * generate a console warning. If not specified, defaults to false –
+   * except that in browsers other than Safari and Internet Explorer,
+   * defaults to true for the wheel, mousewheel, touchstart and touchmove
+   * events.
+   */
+  passive?: boolean;
+
+  /**
+   * A boolean value indicating that the listener should be invoked at most
+   * once after being added. If true, the listener would be automatically
+   * removed when invoked. If not specified, defaults to false.
+   */
+  once?: boolean;
+
+  /**
+   * An AbortSignal. The listener will be removed when the given AbortSignal
+   * object's abort() method is called. If not specified, no AbortSignal is
+   * associated with the listener.
+   */
+  signal?: AbortSignal;
+}
+
 export interface EventListenerRegistration {
   /**
    * A string with the name of the event. It is case-sensitive
@@ -54,40 +89,7 @@ export interface EventListenerRegistration {
   /**
    * @link https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
    */
-  options?: {
-    /**
-     * A boolean value indicating that events of this type will be
-     * dispatched to the registered listener before being dispatched
-     * to any EventTarget beneath it in the DOM tree. If not specified,
-     * defaults to `true`.
-     */
-    capture?: boolean;
-
-    /**
-     * A boolean value that, if true, indicates that the function specified
-     * by listener will never call preventDefault(). If a passive listener
-     * does call preventDefault(), the user agent will do nothing other than
-     * generate a console warning. If not specified, defaults to false –
-     * except that in browsers other than Safari and Internet Explorer,
-     * defaults to true for the wheel, mousewheel, touchstart and touchmove
-     * events.
-     */
-    passive?: boolean;
-
-    /**
-     * A boolean value indicating that the listener should be invoked at most
-     * once after being added. If true, the listener would be automatically
-     * removed when invoked. If not specified, defaults to false.
-     */
-    once?: boolean;
-
-    /**
-     * An AbortSignal. The listener will be removed when the given AbortSignal
-     * object's abort() method is called. If not specified, no AbortSignal is
-     * associated with the listener.
-     */
-    signal?: AbortSignal;
-  };
+  options?: EventCaptureOptions;
 }
 
 export interface EventController {

@@ -1,6 +1,13 @@
 /* eslint-disable no-magic-numbers */
 import { deserialize, hasValue, randomHex, serialize, ValueObject } from '@sohailalam2/abu';
-import { StatefulElementalComponent, ElementalComponentState, StateIsNotConsistentException } from '../../../src';
+
+import {
+  Component,
+  EventListener,
+  ElementalComponentState,
+  StatefulElementalComponent,
+  StateIsNotConsistentException,
+} from '../../../src';
 
 import styles from './styles.css?inline';
 import template from './template.html?raw';
@@ -28,6 +35,7 @@ export class State extends ElementalComponentState<HeroMessage> {
   }
 }
 
+@Component({ template, styles })
 export class Hero extends StatefulElementalComponent<State> {
   static get observedAttributes() {
     return ['name', 'tagline', 'state'];
@@ -36,23 +44,6 @@ export class Hero extends StatefulElementalComponent<State> {
   name = '';
 
   tagline = '';
-
-  protected connectedCallback() {
-    super.connectedCallback();
-
-    this.registerEventListeners([
-      {
-        name: 'click',
-        handler: this.onButtonClickHandler,
-        attachTo: this.$root.querySelector('button') as HTMLButtonElement,
-      },
-      {
-        name: 'UpdateText',
-        handler: this.onUpdateTextHandler,
-        isCustomEvent: true,
-      },
-    ]);
-  }
 
   protected render() {
     const name = this.$root.querySelector('.name') as HTMLParagraphElement;
@@ -70,9 +61,8 @@ export class Hero extends StatefulElementalComponent<State> {
     }
   }
 
-  protected onButtonClickHandler(e: Event) {
-    e.preventDefault();
-
+  @EventListener('click', { attachTo: 'button' })
+  protected onButtonClickHandler() {
     this.raiseEvent(
       'UpdateText',
       true,
@@ -83,6 +73,7 @@ export class Hero extends StatefulElementalComponent<State> {
     );
   }
 
+  @EventListener('UpdateText', { isCustomEvent: true })
   protected onUpdateTextHandler(e: Event): void {
     const msg: HeroMessage = deserialize((e as CustomEvent).detail);
 
@@ -95,5 +86,3 @@ export class Hero extends StatefulElementalComponent<State> {
     return State.deserialize<HeroMessage, State>(serialized);
   }
 }
-
-StatefulElementalComponent.register(Hero, { template, styles });

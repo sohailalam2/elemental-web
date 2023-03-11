@@ -9,6 +9,12 @@ import {
   ElementalComponentTemplateNotFoundException,
 } from './registry';
 import { DefaultEventController, EventController, EventListenerRegistration, EventOptions } from './controller';
+import {
+  DecoratorProcessor,
+  EventListener,
+  DecoratorMetadataValue,
+  EventListenerDecoratorMetadataValue,
+} from './decorators';
 
 /**
  * ElementalComponent Class
@@ -25,7 +31,7 @@ export abstract class ElementalComponent extends HTMLElement implements EventCon
 
   protected readonly $template: HTMLTemplateElement;
 
-  private readonly eventController: EventController;
+  private readonly eventController: EventController = new DefaultEventController(this);
 
   /**
    * ElementalComponent Constructor
@@ -35,7 +41,7 @@ export abstract class ElementalComponent extends HTMLElement implements EventCon
     super();
     const className = this.constructor.name;
 
-    this.ensureComponentIsNotAlreadyRegistered(className);
+    this.ensureComponentIsRegistered(className);
     this.configureAttributesAndProperties();
 
     this.id = this.getAttribute('id') || options.id?.value || randomId();
@@ -50,15 +56,37 @@ export abstract class ElementalComponent extends HTMLElement implements EventCon
         });
     this.$template = this.setupTemplate(this.options?.templateId);
 
-    this.eventController = new DefaultEventController(this);
-    this.eventController.registerEventListeners(this.options?.eventHandlers || []);
+    this.processDecorators();
   }
 
-  private ensureComponentIsNotAlreadyRegistered(className: string) {
-    const isRegistered = ElementalComponentRegistry.isComponentRegisteredWithClassName(className);
+  protected abstract render(): void;
 
-    if (!isRegistered) {
-      throw new ElementalComponentIsNotRegisteredException(className);
+  protected connectedCallback() {
+    this.debug('Connected');
+    this.render();
+  }
+
+  protected disconnectedCallback() {
+    this.debug('Disconnected');
+    this.deregisterEventListeners();
+  }
+
+  protected adoptedCallback() {
+    this.debug('Adopted');
+  }
+
+  protected attributeChangedCallback(name: string, oldVal: string | null, newVal: string | null) {
+    this.debug('Attribute Changed: ', name, '| Old Value = ', oldVal, '| New Value = ', newVal);
+
+    if (!this.hasAttribute(name)) {
+      this.debug('Attribute Removed', name);
+
+      return;
+    }
+    // add the attribute [name] as the property of this class
+    Object.assign(this, { [name]: newVal });
+    if (this.isConnected) {
+      this.render();
     }
   }
 
@@ -119,36 +147,50 @@ export abstract class ElementalComponent extends HTMLElement implements EventCon
     this.eventController.raiseEvent(name, isCustom, payload, opts);
   }
 
-  protected connectedCallback() {
-    this.debug('Connected');
-    this.render();
-  }
+  private ensureComponentIsRegistered(className: string) {
+    const isRegistered = ElementalComponentRegistry.isComponentRegisteredWithClassName(className);
 
-  protected disconnectedCallback() {
-    this.debug('Disconnected');
-    this.deregisterEventListeners();
-  }
-
-  protected adoptedCallback() {
-    this.debug('Adopted');
-  }
-
-  protected attributeChangedCallback(name: string, oldVal: string | null, newVal: string | null) {
-    this.debug('Attribute Changed: ', name, '| Old Value = ', oldVal, '| New Value = ', newVal);
-
-    if (!this.hasAttribute(name)) {
-      this.debug('Attribute Removed', name);
-
-      return;
-    }
-    // add the attribute [name] as the property of this class
-    Object.assign(this, { [name]: newVal });
-    if (this.isConnected) {
-      this.render();
+    if (!isRegistered) {
+      throw new ElementalComponentIsNotRegisteredException(className);
     }
   }
 
-  protected abstract render(): void;
+  private processDecorators(): void {
+    // get component decorators
+    const decorators: DecoratorMetadataValue[] = DecoratorProcessor.getAllDecoratorMetadata(this);
+    // get parent decorators
+    const proto = Object.getPrototypeOf(this.constructor.prototype);
+    const parentElement = proto.constructor as Class<ElementalComponent>;
+
+    if (parentElement) {
+      this.debug(`Component extends parent component "${parentElement.name}"`);
+      const parentDecorators: DecoratorMetadataValue[] = DecoratorProcessor.getAllDecoratorMetadata(proto);
+
+      if (Array.isArray(parentDecorators)) {
+        decorators.push(...parentDecorators);
+      }
+    }
+    // process the event listener decorators
+    this.processEventListenerDecorators(decorators.filter(m => m.decoratorName === EventListener.name));
+  }
+
+  private processEventListenerDecorators(metadata: DecoratorMetadataValue[]) {
+    const listeners = metadata.map(m => {
+      const ev = m as EventListenerDecoratorMetadataValue;
+
+      return {
+        name: ev.eventName,
+        handlerName: ev.handlerName,
+        attachTo: ev.attachTo ? (this.$root.querySelector(ev.attachTo) as HTMLElement) : undefined,
+        isCustomEvent: ev.isCustomEvent,
+        options: ev.options,
+      };
+    });
+
+    this.debug('Registering Decorated Event Listeners: ', metadata, listeners);
+
+    this.registerEventListeners(listeners);
+  }
 
   private configureAttributesAndProperties(): void {
     const uniqueAttributes = new Set(ElementalComponent.observedAttributes.concat(this.getAttributeNames()));
@@ -192,13 +234,6 @@ export abstract class ElementalComponent extends HTMLElement implements EventCon
     return template;
   }
 
-  private findRegisteredTemplateByTagName() {
-    this.debug('Checking any registered child template');
-    const tagName = ElementalComponentRegistry.generateTagNameForClassName(this.constructor.name);
-
-    return document.getElementById(tagName) as HTMLTemplateElement;
-  }
-
   private findRegisteredParentTemplate() {
     const proto = Object.getPrototypeOf(this.constructor.prototype);
     const parentElement = proto.constructor as Class<ElementalComponent>;
@@ -218,6 +253,13 @@ export abstract class ElementalComponent extends HTMLElement implements EventCon
     const parentTagName = ElementalComponentRegistry.getRegisteredTagName(parentElement.name) as string;
 
     return document.getElementById(parentTagName) as HTMLTemplateElement;
+  }
+
+  private findRegisteredTemplateByTagName() {
+    this.debug('Checking any registered child template');
+    const tagName = ElementalComponentRegistry.generateTagNameForClassName(this.constructor.name);
+
+    return document.getElementById(tagName) as HTMLTemplateElement;
   }
 
   private debug(message?: string, ...optionalParams: unknown[]) {
