@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.0](https://github.com/sohailalam2/elemental-web/compare/v0.3.0...v0.4.0) (2023-03-12)
+
+### Features
+
+- add observedstate decorator support ([7057322](https://github.com/sohailalam2/elemental-web/commit/7057322265c6fe81a7bffcb898f0311f50669910))
+- add support for adopted stylesheets ([d77c68c](https://github.com/sohailalam2/elemental-web/commit/d77c68c86c652b450652fa90557228a737cf3024))
+- add support for component, eventlistener decorators ([b35477f](https://github.com/sohailalam2/elemental-web/commit/b35477f2960800b323d4821350236a732d50c5f4))
+- add this. query selector, rename folder structure ([fc8227e](https://github.com/sohailalam2/elemental-web/commit/fc8227e812e102dd51b71c27eb2d8da826dd0d96))
+
+### Bug Fixes
+
+- tests by fixing import paths ([3986997](https://github.com/sohailalam2/elemental-web/commit/39869979526762ebca2804fa14c7e9ed8f91ef9c))
+
 ## [0.3.0](https://github.com/sohailalam2/elemental-web/compare/v0.2.8...v0.3.0) (2023-01-17)
 
 ### [0.2.8](https://github.com/sohailalam2/elemental-web/compare/v0.2.7...v0.2.8) (2023-01-17)
