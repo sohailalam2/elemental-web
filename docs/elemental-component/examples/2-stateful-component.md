@@ -2,7 +2,9 @@
 
 ![stateful-component-example.png](/assets/elemental-component/stateful-component-example.png)
 
-## template.html
+## Code
+
+### template.html
 
 ```html
 <section>
@@ -11,7 +13,7 @@
 </section>
 ```
 
-## styles.scss
+### styles.scss
 
 ```scss
 :host {
@@ -37,7 +39,7 @@
 }
 ```
 
-## State.ts
+### State.ts
 
 ```ts
 import { Exception, ValueObject, ValueObjectDeserializationMapper } from '@sohailalam2/abu';
@@ -121,7 +123,7 @@ export class State extends ElementalComponentState<MagicianStateData> {
 }
 ```
 
-## Magician.ts
+### Magician.ts
 
 ```ts
 import { StatefulElementalComponent } from '@sohailalam2/elemental-web';
@@ -156,6 +158,9 @@ export class Magician extends StatefulElementalComponent<State> {
 
 StatefulElementalComponent.register(Magician, { template, styles });
 
+// ----------------------
+// somewhere else in code
+// ----------------------
 // create an instance
 const magician = new Magician({
   state: State.from<MagicianStateData, State>({

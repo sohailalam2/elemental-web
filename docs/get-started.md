@@ -26,5 +26,5 @@ $ npm install @sohailalam2/elemental-web
 
 ### NodeJs > v16
 
-`@sohailalam2/abu` uses the `crypto` module and specifically the `crypto.webcrypto` object for its random number
-generation which is used to generate random ids by Elemental Component. This is only available on Node v16+.
+Elemental Web has only one tiny dependency - Abu. `@sohailalam2/abu` uses the `crypto` module and specifically the `crypto.webcrypto` object for its random number
+generation which is used to generate random ids by Elemental Component. These APIs are only available on Node v16+, hence the minimum version requirement.

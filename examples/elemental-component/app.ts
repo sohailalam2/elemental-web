@@ -15,6 +15,10 @@ document.body.innerHTML += `
 
 document.body.appendChild(new Paragraph());
 
+const anotherParagraph = document.createElement('el-paragraph');
+
+document.body.appendChild(anotherParagraph);
+
 document.body.appendChild(magician);
 
 document.body.innerHTML += `

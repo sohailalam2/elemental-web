@@ -20,6 +20,10 @@ export class Hero extends StatefulElementalComponent<State> {
     const tagline = this.$('.tagline');
     const secret = this.$('.secret');
 
+    if (!name || !tagline || !secret) {
+      return;
+    }
+
     name.textContent = `I am ${this.name}`;
     tagline.textContent = this.tagline;
 

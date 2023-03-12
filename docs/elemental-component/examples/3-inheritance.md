@@ -7,7 +7,9 @@ Notice how `Hero` component uses a complex data as `state`.
 
 ![inheritance-example.png](/assets/elemental-component/inheritance-example.png)
 
-## template.html
+## Code
+
+### template.html
 
 ```html
 <section>
@@ -18,7 +20,7 @@ Notice how `Hero` component uses a complex data as `state`.
 </section>
 ```
 
-## styles.css
+### styles.css
 
 ```css
 :host {
@@ -60,102 +62,58 @@ button {
 }
 ```
 
-## Hero.ts
+### Hero.ts
 
 ```ts
 /* eslint-disable no-magic-numbers */
-import { deserialize, hasValue, randomHex, serialize, ValueObject } from '@sohailalam2/abu';
-import {
-  StatefulElementalComponent,
-  ElementalComponentState,
-  StateIsNotConsistentException,
-} from '@sohailalam2/elemental-web';
+import { deserialize, randomHex, serialize } from '@sohailalam2/abu';
+
+import { Component, EventListener, ObservedState, StatefulElementalComponent } from '@sohailalam2/elemental-web';
 
 import styles from './styles.css?inline';
 import template from './template.html?raw';
+import { HeroMessage, State } from './State';
 
-interface HeroMessage {
-  name: string;
-  message: string;
-}
-
-export class State extends ElementalComponentState<HeroMessage> {
-  static defaultState<Type, K extends ValueObject<Type>>(): K {
-    return State.from({
-      name: 'unknown',
-      message: 'unknown',
-    }) as K;
-  }
-
-  validate() {
-    super.validate();
-    const isConsistent = hasValue(this.value) && hasValue(this.value.name) && hasValue(this.value.message);
-
-    if (!isConsistent) {
-      throw new StateIsNotConsistentException(this.constructor.name);
-    }
-  }
-}
-
+@Component({ template, styles })
 export class Hero extends StatefulElementalComponent<State> {
-  static get observedAttributes() {
-    return ['name', 'tagline', 'state'];
-  }
-
+  @ObservedState
   name = '';
 
+  @ObservedState
   tagline = '';
 
-  protected connectedCallback() {
-    super.connectedCallback();
-
-    this.registerEventListeners([
-      {
-        name: 'click',
-        handler: this.onButtonClickHandler,
-        attachTo: this.$root.querySelector('button') as HTMLButtonElement,
-      },
-      {
-        name: 'UpdateText',
-        handler: this.onUpdateTextHandler,
-        isCustomEvent: true,
-      },
-    ]);
-  }
-
   protected render() {
-    const name = this.$root.querySelector('.name') as HTMLParagraphElement;
-    const tagline = this.$root.querySelector('.tagline') as HTMLParagraphElement;
-    const secret = this.$root.querySelector('.secret') as HTMLParagraphElement;
+    const name = this.$('.name');
+    const tagline = this.$('.tagline');
+    const secret = this.$('.secret');
+
+    if (!name || !tagline || !secret) {
+      return;
+    }
 
     name.textContent = `I am ${this.name}`;
     tagline.textContent = this.tagline;
 
     if (this.$state.value.name !== 'unknown') {
-      secret.textContent = `
-        ${this.$state.value.name} send a secret message.
-        ${this.$state.value.message}
-      `;
+      secret.textContent = `${this.$state.value.name} | ${this.$state.value.message}`;
     }
   }
 
-  protected onButtonClickHandler(e: Event) {
-    e.preventDefault();
+  @EventListener('click', { attachTo: 'button' })
+  protected onButtonClickHandler() {
+    const serializedMsg = serialize({ name: this.name, message: `secret code #${randomHex()}` });
 
-    this.raiseEvent(
-      'UpdateText',
-      true,
-      serialize({
-        name: this.name,
-        message: `secret code #${randomHex()}`,
-      }),
-    );
+    this.raiseEvent('UpdateText', true, serializedMsg);
   }
 
+  @EventListener('UpdateText', { isCustomEvent: true })
   protected onUpdateTextHandler(e: Event): void {
-    const msg: HeroMessage = deserialize((e as CustomEvent).detail);
+    let msg: HeroMessage = deserialize((e as CustomEvent).detail);
 
-    if (msg.name !== this.name) {
+    if (msg) {
+      if (msg.name === this.name) {
+        msg = { name: this.name, message: '✅ Message Sent' };
+      }
       this.updateState(State.from(msg));
     }
   }
@@ -164,30 +122,27 @@ export class Hero extends StatefulElementalComponent<State> {
     return State.deserialize<HeroMessage, State>(serialized);
   }
 }
-
-StatefulElementalComponent.register(Hero, { template, styles });
 ```
 
-## HeroSidekick.ts
+### HeroSidekick.ts
 
 ```ts
-import { ElementalComponent } from '@sohailalam2/elemental-web';
+import { Component } from '@sohailalam2/elemental-web';
 
 import { Hero } from './Hero';
 
+@Component()
 export class HeroSidekick extends Hero {
   protected connectedCallback() {
     super.connectedCallback();
-    const tagline = this.$root.querySelector('.tagline') as HTMLParagraphElement;
+    const tagline = this.$('.tagline') as HTMLParagraphElement;
 
     tagline.classList.add('sidekick-tagline');
   }
 }
-
-ElementalComponent.register(HeroSidekick);
 ```
 
-## index.ts
+### index.ts
 
 ```ts
 import './Hero';

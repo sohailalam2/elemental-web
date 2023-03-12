@@ -6,7 +6,7 @@ import { Hero } from './Hero';
 export class HeroSidekick extends Hero {
   protected connectedCallback() {
     super.connectedCallback();
-    const tagline = this.$('.tagline');
+    const tagline = this.$('.tagline') as HTMLParagraphElement;
 
     tagline.classList.add('sidekick-tagline');
   }
