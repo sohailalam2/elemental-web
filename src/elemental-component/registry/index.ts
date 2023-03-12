@@ -1,2 +1,2 @@
-export * from './ElementalComponentRegistry';
+export * from './RegistryController';
 export * from './types';

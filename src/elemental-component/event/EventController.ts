@@ -1,10 +1,10 @@
 import { debug, Exception, serialize } from '@sohailalam2/abu';
 
-import { EventController, EventListenerRegistration, EventOptions } from './';
+import { EventListenerRegistration, EventOptions } from './';
 
 export class ElementalComponentCustomEventHandlerIsNotDefined extends Exception {}
 
-export class DefaultEventController<T extends HTMLElement> implements EventController {
+export class EventController<T extends HTMLElement> {
   // map(event-name => handler-function-reference)
   private readonly eventListeners: Map<string, EventListenerRegistration> = new Map();
 
@@ -99,7 +99,7 @@ export class DefaultEventController<T extends HTMLElement> implements EventContr
 
   private debug(message?: string, ...optionalParams: unknown[]) {
     debug(
-      `[elemental-component][controller][${this.component.constructor.name}][id=${this.component.id}] ${message}`,
+      `[elemental-component][event-controller][${this.component.constructor.name}][id=${this.component.id}] ${message}`,
       ...optionalParams,
     );
   }

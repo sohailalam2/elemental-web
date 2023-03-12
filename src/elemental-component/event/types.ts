@@ -91,23 +91,3 @@ export interface EventListenerRegistration {
    */
   options?: EventCaptureOptions;
 }
-
-export interface EventController {
-  registerEventListeners: (registrations: EventListenerRegistration[]) => void;
-
-  deregisterEventListeners: () => void;
-
-  raiseEvent: <Payload = undefined>(
-    /**
-     * A string with the name of the event. It is case-sensitive.
-     */
-    name: string,
-    isCustom?: boolean,
-    /**
-     * The read-only detail property of the CustomEvent interface returns any
-     * data passed when initializing the event via this payload property
-     */
-    payload?: Payload,
-    options?: EventOptions,
-  ) => void;
-}

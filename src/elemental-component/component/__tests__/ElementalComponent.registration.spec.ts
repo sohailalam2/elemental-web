@@ -4,14 +4,12 @@ import { describe, expect, it } from 'vitest';
 import { ElementalComponentOptions } from '../../types';
 import { ElementalComponentPrefix } from '../../values';
 import { ElementalComponent } from '../ElementalComponent';
+import { RegistrationOptions, RegistryController, ElementalComponentIsNotRegisteredException } from '../../registry';
 import {
-  RegistrationOptions,
-  ElementalComponentRegistry,
-  ElementalComponentIsNotRegisteredException,
-  ElementalComponentTemplateNotFoundException,
+  TemplateController,
   ElementalComponentTemplateCanNotBeEmptyException,
-} from '../../registry';
-
+  ElementalComponentTemplateNotFoundException,
+} from '../../template';
 // we need to define webcrypto because Abu uses it to generate the random numbers
 // and this is not available in the simulated DOM test environment
 import crypto from 'crypto';
@@ -39,7 +37,7 @@ describe('ElementalComponent Registration', () => {
     ElementalComponent.register(MyComponentIsRegistered);
 
     expect(() => new MyComponentIsRegistered()).not.toThrow(ElementalComponentIsNotRegisteredException);
-    expect(ElementalComponentRegistry.isComponentRegistered(MyComponentIsRegistered)).toEqual(true);
+    expect(RegistryController.isComponentRegistered(MyComponentIsRegistered)).toEqual(true);
   });
 
   it('should have been registered with a custom prefix', () => {
@@ -50,7 +48,7 @@ describe('ElementalComponent Registration', () => {
     ElementalComponent.register(MyComponentWithCustomPrefix, options);
 
     expect(() => new MyComponentWithCustomPrefix()).not.toThrow(ElementalComponentIsNotRegisteredException);
-    expect(ElementalComponentRegistry.isComponentRegistered(MyComponentWithCustomPrefix)).toEqual(true);
+    expect(RegistryController.isComponentRegistered(MyComponentWithCustomPrefix)).toEqual(true);
     expect(new MyComponentWithCustomPrefix().tagName).toEqual('custom-my-component-with-custom-prefix');
   });
 
@@ -62,7 +60,7 @@ describe('ElementalComponent Registration', () => {
     ElementalComponent.register(MyComponentWithTemplate, options);
 
     expect(() => new MyComponentWithTemplate()).not.toThrow(ElementalComponentIsNotRegisteredException);
-    expect(ElementalComponentRegistry.isComponentRegistered(MyComponentWithTemplate)).toEqual(true);
+    expect(RegistryController.isComponentRegistered(MyComponentWithTemplate)).toEqual(true);
     // @ts-ignore
     expect(new MyComponentWithTemplate().$template).toBeDefined();
     expect(new MyComponentWithTemplate().$root.innerHTML).toEqual(options.template);
@@ -96,7 +94,7 @@ describe('ElementalComponent Registration', () => {
     document.body.prepend(template);
 
     expect(() => ElementalComponent.register(MyComponentWithTemplateId, options)).not.toThrow();
-    expect(ElementalComponentRegistry.isComponentRegistered(MyComponentWithTemplateId)).toEqual(true);
+    expect(RegistryController.isComponentRegistered(MyComponentWithTemplateId)).toEqual(true);
     // @ts-ignore
     expect(new MyComponentWithTemplateId().$template).toBeDefined();
     expect(new MyComponentWithTemplateId().$root.innerHTML).toEqual(template.innerHTML);
@@ -122,7 +120,7 @@ describe('ElementalComponent Registration', () => {
     ElementalComponent.register(MyInstanceWithTemplateId);
     const component = new MyInstanceWithTemplateId({ templateId: template.id });
 
-    expect(ElementalComponentRegistry.isComponentRegistered(MyInstanceWithTemplateId)).toEqual(true);
+    expect(RegistryController.isComponentRegistered(MyInstanceWithTemplateId)).toEqual(true);
     // @ts-ignore
     expect(component.$template).toBeDefined();
     expect(component.$root.innerHTML).toEqual(template.innerHTML);
@@ -133,7 +131,7 @@ describe('ElementalComponent Registration', () => {
     const options: RegistrationOptions = { extends: 'a' };
 
     expect(() => ElementalComponent.register(MyExtendedComponent, options)).not.toThrow();
-    expect(ElementalComponentRegistry.isComponentRegistered(MyExtendedComponent)).toEqual(true);
+    expect(RegistryController.isComponentRegistered(MyExtendedComponent)).toEqual(true);
   });
 
   it('should register a template for a component', () => {
@@ -143,8 +141,8 @@ describe('ElementalComponent Registration', () => {
 
     ElementalComponent.register(MyTemplateForComponent, { template });
 
-    expect(ElementalComponentRegistry.isTemplateRegistered(MyTemplateForComponent)).toEqual(true);
-    expect(ElementalComponentRegistry.isComponentRegistered(MyTemplateForComponent)).toEqual(true);
+    expect(TemplateController.isTemplateRegistered(MyTemplateForComponent)).toEqual(true);
+    expect(RegistryController.isComponentRegistered(MyTemplateForComponent)).toEqual(true);
     // @ts-ignore
     expect(new MyTemplateForComponent().$template).toBeDefined();
     expect(new MyTemplateForComponent().$root.innerHTML).toEqual(template);

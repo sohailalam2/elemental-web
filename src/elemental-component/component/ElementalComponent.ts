@@ -2,24 +2,20 @@ import { Class, debug, hasValue, randomId } from '@sohailalam2/abu';
 
 import { ElementalComponentOptions } from '../types';
 import { ElementalComponentPrefix } from '../values';
-import {
-  RegistrationOptions,
-  ElementalComponentRegistry,
-  ElementalComponentIsNotRegisteredException,
-  ElementalComponentTemplateNotFoundException,
-} from '../registry';
-import { DefaultEventController, EventController, EventListenerRegistration, EventOptions } from '../event';
+import { RegistrationOptions, RegistryController, ElementalComponentIsNotRegisteredException } from '../registry';
+import { EventController, EventListenerRegistration, EventOptions } from '../event';
 import {
   DecoratorProcessor,
   EventListener,
   DecoratorMetadataValue,
   EventListenerDecoratorMetadataValue,
 } from '../decorator';
+import { TemplateController } from '../template';
 
 /**
  * ElementalComponent Class
  */
-export abstract class ElementalComponent extends HTMLElement implements EventController {
+export abstract class ElementalComponent extends HTMLElement {
   // list of attributes that will be made observable and for whom the attributeChangedCallback will be called
   static get observedAttributes(): string[] {
     return [];
@@ -33,7 +29,9 @@ export abstract class ElementalComponent extends HTMLElement implements EventCon
 
   protected readonly $template: HTMLTemplateElement;
 
-  private readonly eventController: EventController = new DefaultEventController(this);
+  private readonly eventController = new EventController(this);
+
+  private readonly templateController = new TemplateController(this);
 
   /**
    * ElementalComponent Constructor
@@ -47,7 +45,7 @@ export abstract class ElementalComponent extends HTMLElement implements EventCon
     this.configureAttributesAndProperties();
 
     this.id = this.getAttribute('id') || options.id?.value || randomId();
-    this.tagName = ElementalComponentRegistry.generateTagNameForClassName(className);
+    this.tagName = RegistryController.generateTagNameForClassName(className);
 
     this.$root = options.noShadow
       ? this
@@ -56,7 +54,7 @@ export abstract class ElementalComponent extends HTMLElement implements EventCon
           mode: options.mode || ('open' as ShadowRootMode),
           delegatesFocus: options.delegatesFocus ?? true,
         });
-    this.$template = this.setupTemplate(this.options?.templateId);
+    this.$template = this.processTemplates(this.options?.templateId);
 
     this.processDecorators();
   }
@@ -93,11 +91,17 @@ export abstract class ElementalComponent extends HTMLElement implements EventCon
   }
 
   public static register<T extends ElementalComponent>(element: Class<T>, options?: RegistrationOptions): void {
-    ElementalComponentRegistry.registerComponent(element, options);
+    // NOTE: the order of template and component registration is important
+    // as only a pre-registered template can be discovered by a component
+    if (options?.template !== undefined || options?.templateId !== undefined) {
+      TemplateController.registerTemplate(element, options);
+    }
+
+    RegistryController.registerComponent(element, options);
   }
 
   public static tagName<T extends ElementalComponent>(element: Class<T>, prefix?: ElementalComponentPrefix): string {
-    return ElementalComponentRegistry.generateTagNameForElement(element, prefix);
+    return RegistryController.generateTagNameForElement(element, prefix);
   }
 
   public $<E extends Element, B extends boolean = false>(
@@ -160,7 +164,7 @@ export abstract class ElementalComponent extends HTMLElement implements EventCon
   }
 
   private ensureComponentIsRegistered(className: string) {
-    const isRegistered = ElementalComponentRegistry.isComponentRegisteredWithClassName(className);
+    const isRegistered = RegistryController.isComponentRegisteredWithClassName(className);
 
     if (!isRegistered) {
       throw new ElementalComponentIsNotRegisteredException(className);
@@ -192,6 +196,17 @@ export abstract class ElementalComponent extends HTMLElement implements EventCon
     this.registerEventListeners(listeners);
   }
 
+  private processTemplates(templateId: string | undefined): HTMLTemplateElement {
+    const template = this.templateController.findRegisteredTemplate(templateId);
+
+    if (template) {
+      this.debug('Template found... cloning template to $root node');
+      this.$root.appendChild(template.content.cloneNode(true));
+    }
+
+    return template;
+  }
+
   private configureAttributesAndProperties(): void {
     const uniqueAttributes = new Set(ElementalComponent.observedAttributes.concat(this.getAttributeNames()));
     const attributes = Array.from(uniqueAttributes);
@@ -203,63 +218,6 @@ export abstract class ElementalComponent extends HTMLElement implements EventCon
       // add the attribute [name] as the property of this class
       Object.assign(this, { [attribute]: undefined });
     });
-  }
-
-  private setupTemplate(templateId: string | undefined): HTMLTemplateElement {
-    const template = this.getTemplateFromSomewhereIfPossible(templateId);
-
-    if (template) {
-      this.debug('Template found... cloning template to $root node');
-      this.$root.appendChild(template.content.cloneNode(true));
-    }
-
-    return template;
-  }
-
-  private getTemplateFromSomewhereIfPossible(templateId: string | undefined): HTMLTemplateElement {
-    if (templateId) {
-      return this.findRegisteredTemplateById(templateId);
-    }
-
-    return this.findRegisteredParentTemplate() || this.findRegisteredTemplateByTagName();
-  }
-
-  private findRegisteredTemplateById(templateId: string) {
-    const template = document.getElementById(templateId) as HTMLTemplateElement;
-
-    if (!template) {
-      throw new ElementalComponentTemplateNotFoundException(templateId);
-    }
-
-    return template;
-  }
-
-  private findRegisteredParentTemplate() {
-    const proto = Object.getPrototypeOf(this.constructor.prototype);
-    const parentElement = proto.constructor as Class<ElementalComponent>;
-
-    if (!parentElement) {
-      return null;
-    }
-    this.debug(`Component extends parent component "${parentElement.name}"`);
-
-    if (!ElementalComponentRegistry.isTemplateRegistered(parentElement)) {
-      this.debug(`Parent component "${parentElement.name}" does not have a registered template`);
-
-      return null;
-    }
-
-    this.debug(`Parent component "${parentElement.name}" has a registered template`);
-    const parentTagName = ElementalComponentRegistry.getRegisteredTagName(parentElement.name) as string;
-
-    return document.getElementById(parentTagName) as HTMLTemplateElement;
-  }
-
-  private findRegisteredTemplateByTagName() {
-    this.debug('Checking any registered child template');
-    const tagName = ElementalComponentRegistry.generateTagNameForClassName(this.constructor.name);
-
-    return document.getElementById(tagName) as HTMLTemplateElement;
   }
 
   private debug(message?: string, ...optionalParams: unknown[]) {
