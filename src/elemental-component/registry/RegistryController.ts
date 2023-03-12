@@ -16,6 +16,10 @@ export class RegistryController {
     // can not create instance of registry
   }
 
+  //  ------------------------------------------------------------------------------------
+  //  Static Methods
+  //  ------------------------------------------------------------------------------------
+
   public static setDefaultPrefix(prefix: ElementalComponentPrefix): void {
     RegistryController.defaultPrefix = prefix;
   }
@@ -55,11 +59,19 @@ export class RegistryController {
     if (customElements.get(tagName)) {
       throw new ElementalComponentIsAlreadyRegistered(tagName);
     }
-    debug(`[elemental-component][registry] Registering component "${tagName}"`);
+    RegistryController.debug(`Registering component "${tagName}"`);
 
     RegistryController.COMPONENT_CLASSNAME_TO_TAGNAME.set(element.name, tagName);
     customElements.define(tagName, element, { extends: options?.extends ?? undefined });
 
-    debug(`[elemental-component][registry] Component is successfully registered "${tagName}"`);
+    RegistryController.debug(`Component is successfully registered "${tagName}"`);
+  }
+
+  //  ------------------------------------------------------------------------------------
+  //  Loggers
+  //  ------------------------------------------------------------------------------------
+
+  private static debug(message?: string, ...optionalParams: unknown[]) {
+    debug(`[elemental-component][registry-controller] ${message}`, ...optionalParams);
   }
 }

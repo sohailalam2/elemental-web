@@ -1,3 +1,4 @@
+export * from './utils';
 export * from './values';
 export * from './types';
 export * from './event';

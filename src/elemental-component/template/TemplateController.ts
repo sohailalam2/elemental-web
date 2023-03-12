@@ -1,5 +1,6 @@
 import { Class, debug, Exception, hasValue } from '@sohailalam2/abu';
 
+import { hashCode } from '../utils';
 import { ElementalComponent } from '../component';
 import { RegistryController, RegistrationOptions } from '../registry';
 
@@ -12,7 +13,14 @@ export class ElementalComponentTemplateNotFoundException extends Exception {}
 export class TemplateController<T extends HTMLElement> {
   private static readonly TEMPLATE_CLASSNAMES: Set<string> = new Set();
 
+  // cache for styles (css): css-hash/elementName => CSSStyleSheet
+  private static readonly STYLE_CACHE: Map<string, CSSStyleSheet> = new Map();
+
   constructor(private readonly component: T) {}
+
+  //  ------------------------------------------------------------------------------------
+  //  Static Methods
+  //  ------------------------------------------------------------------------------------
 
   public static isTemplateRegistered(element: Class<HTMLElement>): boolean {
     return TemplateController.TEMPLATE_CLASSNAMES.has(element.name);
@@ -22,22 +30,21 @@ export class TemplateController<T extends HTMLElement> {
     return !!document.getElementById(tagName);
   }
 
-  public findRegisteredTemplate(templateId: string | undefined): HTMLTemplateElement {
-    if (templateId) {
-      return this.findRegisteredTemplateById(templateId);
-    }
-
-    return this.findRegisteredParentTemplate() || this.findRegisteredTemplateByTagName();
-  }
-
   public static registerTemplate(element: Class<HTMLElement>, options?: RegistrationOptions): void {
     const tagName = RegistryController.generateTagNameForElement(element, options?.prefix);
 
-    debug(`[elemental-component][registry] Registering template for component "${tagName}"`);
+    TemplateController.debug(`Registering template for component "${tagName}"`);
     this.validateTemplateBeforeRegistration(tagName, options);
     this.createTemplateElement(tagName, element, options);
-    this.addStylesToTemplate(tagName, options);
-    debug(`[elemental-component][registry] Template is successfully registered for component "${tagName}"`);
+
+    if (options?.styles) {
+      if ('adoptedStyleSheets' in document) {
+        this.cacheStyles(element.name, options.styles);
+      } else {
+        this.addStylesToTemplate(tagName, options.styles);
+      }
+    }
+    TemplateController.debug(`Template is successfully registered for component "${tagName}"`);
   }
 
   private static validateTemplateBeforeRegistration(tagName: string, options?: RegistrationOptions) {
@@ -76,19 +83,65 @@ export class TemplateController<T extends HTMLElement> {
     document.body.prepend(templateElement);
   }
 
-  private static addStylesToTemplate(tagName: string, options?: RegistrationOptions) {
-    if (options?.styles) {
-      debug(`[elemental-component][registry] Adding styles to template # "${tagName}"`);
-      const template = document.getElementById(tagName) as HTMLTemplateElement;
-      let style = template.content.querySelector('style') as HTMLStyleElement;
+  private static cacheStyles(elementName: string, styles: string) {
+    const hash = hashCode(styles);
 
-      if (!style) {
-        style = document.createElement('style');
-        template.content.prepend(style);
-      }
+    TemplateController.debug(`Caching styles (hash=${hash}) for "${elementName}"`);
+    if (TemplateController.STYLE_CACHE.has(hash)) {
+      const sheet = TemplateController.STYLE_CACHE.get(hash) as CSSStyleSheet;
 
-      style.textContent = options.styles;
+      TemplateController.STYLE_CACHE.set(elementName, sheet);
+    } else {
+      const sheet = new CSSStyleSheet();
+
+      sheet.replaceSync(styles);
+      TemplateController.STYLE_CACHE.set(hash, sheet);
+      TemplateController.STYLE_CACHE.set(elementName, sheet);
     }
+  }
+
+  private static addStylesToTemplate(tagName: string, styles: string) {
+    TemplateController.debug(`Adding styles to template # "${tagName}"`);
+    const template = document.getElementById(tagName) as HTMLTemplateElement;
+    let style = template.content.querySelector('style') as HTMLStyleElement;
+
+    if (!style) {
+      style = document.createElement('style');
+      template.content.prepend(style);
+    }
+
+    style.textContent = styles;
+  }
+
+  //  ------------------------------------------------------------------------------------
+  //  Instance Methods
+  //  ------------------------------------------------------------------------------------
+
+  public findRegisteredTemplate(templateId: string | undefined): HTMLTemplateElement {
+    if (templateId) {
+      return this.findRegisteredTemplateById(templateId);
+    }
+
+    return this.findRegisteredParentTemplate() || this.findRegisteredTemplateByTagName();
+  }
+
+  public findRegisteredStyles(): CSSStyleSheet | undefined {
+    const styles = TemplateController.STYLE_CACHE.get(this.component.constructor.name);
+
+    if (styles) {
+      TemplateController.debug(`Found cached styles for "${this.component.constructor.name}"`);
+
+      return styles;
+    }
+
+    const proto = Object.getPrototypeOf(this.component.constructor.prototype);
+    const parentElement = proto.constructor as Class<ElementalComponent>;
+
+    if (!parentElement) {
+      return undefined;
+    }
+
+    return TemplateController.STYLE_CACHE.get(parentElement.name);
   }
 
   private findRegisteredTemplateById(templateId: string) {
@@ -108,10 +161,10 @@ export class TemplateController<T extends HTMLElement> {
     if (!parentElement) {
       return null;
     }
-    this.debug(`Component extends parent component "${parentElement.name}"`);
+    TemplateController.debug(`Component extends parent component "${parentElement.name}"`);
 
     if (!TemplateController.isTemplateRegistered(parentElement)) {
-      this.debug(`Parent component "${parentElement.name}" does not have a registered template`);
+      TemplateController.debug(`Parent component "${parentElement.name}" does not have a registered template`);
 
       return null;
     }
@@ -129,10 +182,18 @@ export class TemplateController<T extends HTMLElement> {
     return document.getElementById(tagName) as HTMLTemplateElement;
   }
 
+  //  ------------------------------------------------------------------------------------
+  //  Loggers
+  //  ------------------------------------------------------------------------------------
+
+  private static debug(message?: string, ...optionalParams: unknown[]) {
+    debug(`[elemental-component][template-controller] ${message}`, ...optionalParams);
+  }
+
   private debug(message?: string, ...optionalParams: unknown[]) {
-    debug(
-      `[elemental-component][template-controller][${this.constructor.name}][id=${this.component.id}] ${message}`,
-      ...optionalParams,
-    );
+    const name = this.component?.constructor?.name || '';
+    const id = this.component?.id || '';
+
+    debug(`[elemental-component][template-controller][name=${name}][id=${id}] ${message}`, ...optionalParams);
   }
 }

@@ -5,6 +5,13 @@ import {
   ElementalComponentTemplateCanNotBeEmptyException,
   ElementalComponentTemplateIsAlreadyRegisteredException,
 } from '../TemplateController';
+import { Component, ElementalComponent } from '@/elemental-component';
+
+// we need to define webcrypto because Abu uses it to generate the random numbers
+// and this is not available in the simulated DOM test environment
+import crypto from 'crypto';
+
+Object.defineProperty(globalThis, 'crypto', { value: { webcrypto: crypto.webcrypto } });
 
 describe('TemplateController', () => {
   let template: string;
@@ -59,37 +66,26 @@ describe('TemplateController', () => {
       expect(TemplateController.isTemplateRegisteredWithTagName(`el-${toKebabCase(MyElement12.name)}`)).toEqual(true);
     });
 
-    it('should attach styles to a template if template contains a style tag', () => {
-      class MyElement13 extends HTMLElement {}
+    it('should adopt styles if document supports adoptedStyleSheets', () => {
+      @Component()
+      class MyElement13 extends ElementalComponent {
+        protected render() {
+          // do nothing
+        }
+      }
 
       const styles = `:host { padding: none; }`;
       const template13 = `<style></style>${template}`;
       const tagName = `el-${toKebabCase(MyElement13.name)}`;
 
       TemplateController.registerTemplate(MyElement13, { template: template13, styles });
-
       expect(TemplateController.isTemplateRegisteredWithTagName(tagName)).toEqual(true);
-      expect(document.getElementById(tagName)).toBeDefined();
-      expect((document.getElementById(tagName) as HTMLTemplateElement).content.querySelector('style')).toBeDefined();
-      expect(
-        (document.getElementById(tagName) as HTMLTemplateElement).content.querySelector('style')?.textContent,
-      ).toEqual(styles);
-    });
+      const component = new MyElement13();
 
-    it('should attach styles to a template by creating a style tag if one does not exist', () => {
-      class MyElement14 extends HTMLElement {}
-
-      const styles = `:host { padding: none; }`;
-      const tagName = `el-${toKebabCase(MyElement14.name)}`;
-
-      TemplateController.registerTemplate(MyElement14, { template, styles });
-
-      expect(TemplateController.isTemplateRegisteredWithTagName(tagName)).toEqual(true);
-      expect(document.getElementById(tagName)).toBeDefined();
-      expect((document.getElementById(tagName) as HTMLTemplateElement).content.querySelector('style')).toBeDefined();
-      expect(
-        (document.getElementById(tagName) as HTMLTemplateElement).content.querySelector('style')?.textContent,
-      ).toEqual(styles);
+      document.body.appendChild(component);
+      expect((component.$root as ShadowRoot).adoptedStyleSheets).toBeDefined();
+      // eslint-disable-next-line no-magic-numbers
+      expect((component.$root as ShadowRoot).adoptedStyleSheets.length).equals(1);
     });
   });
 });

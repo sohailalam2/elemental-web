@@ -10,6 +10,10 @@ export class EventController<T extends HTMLElement> {
 
   constructor(private readonly component: T) {}
 
+  //  ------------------------------------------------------------------------------------
+  //  Instance Methods
+  //  ------------------------------------------------------------------------------------
+
   public registerEventListeners(registrations: EventListenerRegistration[]): void {
     registrations.forEach(this.registerEventListener.bind(this));
   }
@@ -97,10 +101,14 @@ export class EventController<T extends HTMLElement> {
     return func;
   }
 
+  //  ------------------------------------------------------------------------------------
+  //  Loggers
+  //  ------------------------------------------------------------------------------------
+
   private debug(message?: string, ...optionalParams: unknown[]) {
-    debug(
-      `[elemental-component][event-controller][${this.component.constructor.name}][id=${this.component.id}] ${message}`,
-      ...optionalParams,
-    );
+    const name = this.component?.constructor?.name || '';
+    const id = this.component?.id || '';
+
+    debug(`[elemental-component][event-controller][name=${name}][id=${id}] ${message}`, ...optionalParams);
   }
 }

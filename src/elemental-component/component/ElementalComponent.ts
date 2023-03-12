@@ -1,13 +1,13 @@
 import { Class, debug, hasValue, randomId } from '@sohailalam2/abu';
 
 import { ElementalComponentOptions } from '../types';
-import { ElementalComponentPrefix } from '../values';
-import { RegistrationOptions, RegistryController, ElementalComponentIsNotRegisteredException } from '../registry';
+import { ElementalComponentId, ElementalComponentPrefix } from '../values';
+import { ElementalComponentIsNotRegisteredException, RegistrationOptions, RegistryController } from '../registry';
 import { EventController, EventListenerRegistration, EventOptions } from '../event';
 import {
+  DecoratorMetadataValue,
   DecoratorProcessor,
   EventListener,
-  DecoratorMetadataValue,
   EventListenerDecoratorMetadataValue,
 } from '../decorator';
 import { TemplateController } from '../template';
@@ -41,23 +41,39 @@ export abstract class ElementalComponent extends HTMLElement {
     super();
     const className = this.constructor.name;
 
+    // ensure that the component is not already registered
     this.ensureComponentIsRegistered(className);
     this.configureAttributesAndProperties();
-
-    this.id = this.getAttribute('id') || options.id?.value || randomId();
+    // assign component properties
     this.tagName = RegistryController.generateTagNameForClassName(className);
-
-    this.$root = options.noShadow
-      ? this
-      : this.attachShadow({
-          // eslint-disable-next-line no-undef
-          mode: options.mode || ('open' as ShadowRootMode),
-          delegatesFocus: options.delegatesFocus ?? true,
-        });
+    this.id = this.getComponentId(options?.id);
+    this.$root = this.getComponentDocumentRoot(options);
     this.$template = this.processTemplates(this.options?.templateId);
-
+    // process all decorators at the end
     this.processDecorators();
   }
+
+  //  ------------------------------------------------------------------------------------
+  //  Static Methods
+  //  ------------------------------------------------------------------------------------
+
+  public static register<T extends ElementalComponent>(element: Class<T>, options?: RegistrationOptions): void {
+    // NOTE: the order of template and component registration is important
+    // as only a pre-registered template can be discovered by a component
+    if (options?.template !== undefined || options?.templateId !== undefined) {
+      TemplateController.registerTemplate(element, options);
+    }
+
+    RegistryController.registerComponent(element, options);
+  }
+
+  public static tagName<T extends ElementalComponent>(element: Class<T>, prefix?: ElementalComponentPrefix): string {
+    return RegistryController.generateTagNameForElement(element, prefix);
+  }
+
+  //  ------------------------------------------------------------------------------------
+  //  Instance Methods
+  //  ------------------------------------------------------------------------------------
 
   protected abstract render(): void;
 
@@ -88,20 +104,6 @@ export abstract class ElementalComponent extends HTMLElement {
     if (this.isConnected) {
       this.render();
     }
-  }
-
-  public static register<T extends ElementalComponent>(element: Class<T>, options?: RegistrationOptions): void {
-    // NOTE: the order of template and component registration is important
-    // as only a pre-registered template can be discovered by a component
-    if (options?.template !== undefined || options?.templateId !== undefined) {
-      TemplateController.registerTemplate(element, options);
-    }
-
-    RegistryController.registerComponent(element, options);
-  }
-
-  public static tagName<T extends ElementalComponent>(element: Class<T>, prefix?: ElementalComponentPrefix): string {
-    return RegistryController.generateTagNameForElement(element, prefix);
   }
 
   public $<E extends Element, B extends boolean = false>(
@@ -171,6 +173,26 @@ export abstract class ElementalComponent extends HTMLElement {
     }
   }
 
+  private getComponentId(id?: ElementalComponentId): string {
+    let cid = this.getAttribute('id') || id?.value || randomId();
+
+    if (!cid || cid === 'undefined') {
+      cid = randomId();
+    }
+
+    return cid;
+  }
+
+  private getComponentDocumentRoot(options?: ElementalComponentOptions): HTMLElement | ShadowRoot {
+    return options?.noShadow
+      ? this
+      : this.attachShadow({
+          // eslint-disable-next-line no-undef
+          mode: options?.mode || ('open' as ShadowRootMode),
+          delegatesFocus: options?.delegatesFocus ?? true,
+        });
+  }
+
   private processDecorators(): void {
     // get component decorators
     const decorators: DecoratorMetadataValue[] = DecoratorProcessor.getAllDecoratorMetadata(this, EventListener);
@@ -204,6 +226,14 @@ export abstract class ElementalComponent extends HTMLElement {
       this.$root.appendChild(template.content.cloneNode(true));
     }
 
+    if ('adoptedStyleSheets' in document && !this.options.noShadow) {
+      const styles = this.templateController.findRegisteredStyles();
+
+      if (styles) {
+        (this.$root as ShadowRoot).adoptedStyleSheets = [styles];
+      }
+    }
+
     return template;
   }
 
@@ -220,7 +250,17 @@ export abstract class ElementalComponent extends HTMLElement {
     });
   }
 
+  //  ------------------------------------------------------------------------------------
+  //  Loggers
+  //  ------------------------------------------------------------------------------------
+
   private debug(message?: string, ...optionalParams: unknown[]) {
-    debug(`[elemental-component][${this.constructor.name}][id=${this.id}] ${message}`, ...optionalParams);
+    const { name } = this.constructor;
+
+    debug(`[elemental-component][component][name=${name}][id=${this.id}] ${message}`, ...optionalParams);
+
+    if (this.id === 'undefined') {
+      debug(`ID is undefined - ${this}`, ...optionalParams);
+    }
   }
 }
