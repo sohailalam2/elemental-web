@@ -24,7 +24,7 @@ describe('TemplateController', () => {
     it('should correctly register a given template', () => {
       class MyElement8 extends HTMLElement {}
 
-      TemplateController.registerTemplate(MyElement8, { template });
+      TemplateController.registerTemplateAndStyles(MyElement8, { template });
 
       expect(TemplateController.isTemplateRegistered(MyElement8)).toEqual(true);
     });
@@ -32,7 +32,7 @@ describe('TemplateController', () => {
     it('should throw when template is empty', () => {
       class MyElement9 extends HTMLElement {}
 
-      expect(() => TemplateController.registerTemplate(MyElement9, { template: '' })).to.throw(
+      expect(() => TemplateController.registerTemplateAndStyles(MyElement9, { template: '' })).to.throw(
         ElementalComponentTemplateCanNotBeEmptyException,
       );
     });
@@ -42,7 +42,7 @@ describe('TemplateController', () => {
 
       expect(TemplateController.isTemplateRegistered(MyElement10)).toEqual(false);
 
-      TemplateController.registerTemplate(MyElement10, { template });
+      TemplateController.registerTemplateAndStyles(MyElement10, { template });
 
       expect(TemplateController.isTemplateRegistered(MyElement10)).toEqual(true);
     });
@@ -50,8 +50,8 @@ describe('TemplateController', () => {
     it('should throw exception when re-registering component template with same tag name', () => {
       class MyElement11 extends HTMLElement {}
 
-      TemplateController.registerTemplate(MyElement11, { template });
-      expect(() => TemplateController.registerTemplate(MyElement11, { template })).to.throw(
+      TemplateController.registerTemplateAndStyles(MyElement11, { template });
+      expect(() => TemplateController.registerTemplateAndStyles(MyElement11, { template })).to.throw(
         ElementalComponentTemplateIsAlreadyRegisteredException,
       );
     });
@@ -61,7 +61,7 @@ describe('TemplateController', () => {
 
       expect(TemplateController.isTemplateRegisteredWithTagName(`el-${toKebabCase(MyElement12.name)}`)).toEqual(false);
 
-      TemplateController.registerTemplate(MyElement12, { template });
+      TemplateController.registerTemplateAndStyles(MyElement12, { template });
 
       expect(TemplateController.isTemplateRegisteredWithTagName(`el-${toKebabCase(MyElement12.name)}`)).toEqual(true);
     });
@@ -78,7 +78,7 @@ describe('TemplateController', () => {
       const template13 = `<style></style>${template}`;
       const tagName = `el-${toKebabCase(MyElement13.name)}`;
 
-      TemplateController.registerTemplate(MyElement13, { template: template13, styles });
+      TemplateController.registerTemplateAndStyles(MyElement13, { template: template13, styles });
       expect(TemplateController.isTemplateRegisteredWithTagName(tagName)).toEqual(true);
       const component = new MyElement13();
 

@@ -2,7 +2,7 @@ import { Class, debug, Exception, hasValue } from '@sohailalam2/abu';
 
 import { hashCode } from '../utils';
 import { ElementalComponent } from '../component';
-import { RegistryController, RegistrationOptions } from '../registry';
+import { RegistrationOptions, RegistryController } from '../registry';
 
 export class ElementalComponentTemplateCanNotBeEmptyException extends Exception {}
 
@@ -13,8 +13,11 @@ export class ElementalComponentTemplateNotFoundException extends Exception {}
 export class TemplateController<T extends HTMLElement> {
   private static readonly TEMPLATE_CLASSNAMES: Set<string> = new Set();
 
-  // cache for styles (css): css-hash/elementName => CSSStyleSheet
-  private static readonly STYLE_CACHE: Map<string, CSSStyleSheet> = new Map();
+  // cache for styles (css): css-hash => CSSStyleSheet
+  private static readonly CSS_HASH_TO_STYLES_MAP: Map<string, CSSStyleSheet> = new Map();
+
+  // cache for styles (css): elementName => [css-hash]
+  private static readonly ELEMENT_NAME_TO_CSS_HASH_MAP: Map<string, Set<string>> = new Map();
 
   constructor(private readonly component: T) {}
 
@@ -30,21 +33,31 @@ export class TemplateController<T extends HTMLElement> {
     return !!document.getElementById(tagName);
   }
 
-  public static registerTemplate(element: Class<HTMLElement>, options?: RegistrationOptions): void {
+  public static registerTemplateAndStyles(element: Class<HTMLElement>, options?: RegistrationOptions): void {
     const tagName = RegistryController.generateTagNameForElement(element, options?.prefix);
 
-    TemplateController.debug(`Registering template for component "${tagName}"`);
-    this.validateTemplateBeforeRegistration(tagName, options);
-    this.createTemplateElement(tagName, element, options);
+    // Register template if any
+    if (options?.template !== undefined || options?.templateId !== undefined) {
+      this.debug(`Registering template for component "${tagName}"`);
+      this.validateTemplateBeforeRegistration(tagName, options);
+      this.createTemplateElement(tagName, element, options);
+    }
 
+    // Register styles if any
     if (options?.styles) {
+      this.debug(`Registering styles for component "${tagName}"`);
+      let stylesheets = options.styles;
+
+      if (!Array.isArray(stylesheets)) {
+        stylesheets = [stylesheets];
+      }
       if ('adoptedStyleSheets' in document) {
-        this.cacheStyles(element.name, options.styles);
+        this.cacheStyles(element.name, stylesheets);
       } else {
-        this.addStylesToTemplate(tagName, options.styles);
+        this.addStylesToTemplate(tagName, stylesheets);
       }
     }
-    TemplateController.debug(`Template is successfully registered for component "${tagName}"`);
+    this.debug(`Template/Styles have been successfully registered for component "${tagName}"`);
   }
 
   private static validateTemplateBeforeRegistration(tagName: string, options?: RegistrationOptions) {
@@ -83,25 +96,30 @@ export class TemplateController<T extends HTMLElement> {
     document.body.prepend(templateElement);
   }
 
-  private static cacheStyles(elementName: string, styles: string) {
-    const hash = hashCode(styles);
-
-    TemplateController.debug(`Caching styles (hash=${hash}) for "${elementName}"`);
-    if (TemplateController.STYLE_CACHE.has(hash)) {
-      const sheet = TemplateController.STYLE_CACHE.get(hash) as CSSStyleSheet;
-
-      TemplateController.STYLE_CACHE.set(elementName, sheet);
-    } else {
-      const sheet = new CSSStyleSheet();
-
-      sheet.replaceSync(styles);
-      TemplateController.STYLE_CACHE.set(hash, sheet);
-      TemplateController.STYLE_CACHE.set(elementName, sheet);
+  private static cacheStyles(elementName: string, stylesheets: string[]) {
+    if (!this.ELEMENT_NAME_TO_CSS_HASH_MAP.has(elementName)) {
+      this.ELEMENT_NAME_TO_CSS_HASH_MAP.set(elementName, new Set<string>());
     }
+    const elementStylesheets = this.ELEMENT_NAME_TO_CSS_HASH_MAP.get(elementName) as Set<string>;
+
+    stylesheets.forEach(stylesheet => {
+      const hash = hashCode(stylesheet);
+
+      if (!this.CSS_HASH_TO_STYLES_MAP.has(hash)) {
+        this.debug(`Caching new stylesheet (hash=${hash}) for "${elementName}"`);
+        const sheet = new CSSStyleSheet();
+
+        sheet.replaceSync(stylesheet);
+        this.CSS_HASH_TO_STYLES_MAP.set(hash, sheet);
+      }
+
+      this.debug(`Linking cached stylesheet (hash=${hash}) for "${elementName}"`);
+      elementStylesheets.add(hash);
+    });
   }
 
-  private static addStylesToTemplate(tagName: string, styles: string) {
-    TemplateController.debug(`Adding styles to template # "${tagName}"`);
+  private static addStylesToTemplate(tagName: string, stylesheets: string[]) {
+    TemplateController.debug(`Adding stylesheets to template # "${tagName}"`);
     const template = document.getElementById(tagName) as HTMLTemplateElement;
     let style = template.content.querySelector('style') as HTMLStyleElement;
 
@@ -110,7 +128,7 @@ export class TemplateController<T extends HTMLElement> {
       template.content.prepend(style);
     }
 
-    style.textContent = styles;
+    style.textContent = stylesheets.join('\n');
   }
 
   //  ------------------------------------------------------------------------------------
@@ -125,23 +143,32 @@ export class TemplateController<T extends HTMLElement> {
     return this.findRegisteredParentTemplate() || this.findRegisteredTemplateByTagName();
   }
 
-  public findRegisteredStyles(): CSSStyleSheet | undefined {
-    const styles = TemplateController.STYLE_CACHE.get(this.component.constructor.name);
+  public findRegisteredStyles(): CSSStyleSheet[] {
+    const allHashes: Set<string> = new Set<string>();
 
-    if (styles) {
-      TemplateController.debug(`Found cached styles for "${this.component.constructor.name}"`);
+    // check the element
+    const elementName = this.component.constructor.name;
+    const hashes = TemplateController.ELEMENT_NAME_TO_CSS_HASH_MAP.get(elementName);
 
-      return styles;
+    if (hashes) {
+      this.debug(`Found cached styles for "${elementName}"`);
+      hashes.forEach(hash => allHashes.add(hash));
     }
 
+    // check parent element
     const proto = Object.getPrototypeOf(this.component.constructor.prototype);
     const parentElement = proto.constructor as Class<ElementalComponent>;
 
-    if (!parentElement) {
-      return undefined;
+    if (parentElement) {
+      const parentHashes = TemplateController.ELEMENT_NAME_TO_CSS_HASH_MAP.get(parentElement.name);
+
+      if (parentHashes) {
+        this.debug(`Found cached styles in parent "${parentElement.name}" for child "${elementName}"`);
+        parentHashes.forEach(hash => allHashes.add(hash));
+      }
     }
 
-    return TemplateController.STYLE_CACHE.get(parentElement.name);
+    return Array.from(allHashes).map(hash => TemplateController.CSS_HASH_TO_STYLES_MAP.get(hash) as CSSStyleSheet);
   }
 
   private findRegisteredTemplateById(templateId: string) {

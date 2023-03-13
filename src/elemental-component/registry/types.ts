@@ -18,7 +18,7 @@ export interface RegistrationOptions {
   /**
    * Styles that will be registered as a style element in the component root
    */
-  styles?: string;
+  styles?: string | string[];
 
   /**
    * @deprecated

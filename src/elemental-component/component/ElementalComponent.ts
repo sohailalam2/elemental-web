@@ -48,7 +48,7 @@ export abstract class ElementalComponent extends HTMLElement {
     this.tagName = RegistryController.generateTagNameForClassName(className);
     this.id = this.getComponentId(options?.id);
     this.$root = this.getComponentDocumentRoot(options);
-    this.$template = this.processTemplates(this.options?.templateId);
+    this.$template = this.processTemplateAndStyles(this.options?.templateId);
     // process all decorators at the end
     this.processDecorators();
   }
@@ -60,10 +60,7 @@ export abstract class ElementalComponent extends HTMLElement {
   public static register<T extends ElementalComponent>(element: Class<T>, options?: RegistrationOptions): void {
     // NOTE: the order of template and component registration is important
     // as only a pre-registered template can be discovered by a component
-    if (options?.template !== undefined || options?.templateId !== undefined) {
-      TemplateController.registerTemplate(element, options);
-    }
-
+    TemplateController.registerTemplateAndStyles(element, options);
     RegistryController.registerComponent(element, options);
   }
 
@@ -218,7 +215,7 @@ export abstract class ElementalComponent extends HTMLElement {
     this.registerEventListeners(listeners);
   }
 
-  private processTemplates(templateId: string | undefined): HTMLTemplateElement {
+  private processTemplateAndStyles(templateId: string | undefined): HTMLTemplateElement {
     const template = this.templateController.findRegisteredTemplate(templateId);
 
     if (template) {
@@ -227,11 +224,12 @@ export abstract class ElementalComponent extends HTMLElement {
     }
 
     if ('adoptedStyleSheets' in document && !this.options.noShadow) {
-      const styles = this.templateController.findRegisteredStyles();
-
-      if (styles) {
-        (this.$root as ShadowRoot).adoptedStyleSheets = [styles];
+      if (!(this.$root as ShadowRoot).adoptedStyleSheets) {
+        (this.$root as ShadowRoot).adoptedStyleSheets = [];
       }
+      this.templateController.findRegisteredStyles().forEach(stylesheet => {
+        (this.$root as ShadowRoot).adoptedStyleSheets.push(stylesheet);
+      });
     }
 
     return template;

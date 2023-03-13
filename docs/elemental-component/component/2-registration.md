@@ -3,17 +3,21 @@
 ## Register your Component
 
 Before you can create an instance of your component, you need to register it first.
-Trust us, you don't want to forget this step - if you do, you'll be hit with the dreaded `ElementalComponentIsNotRegisteredException` exception. Nobody wants that.
+Trust us, you don't want to forget this step - if you do, you'll be hit with the
+dreaded `ElementalComponentIsNotRegisteredException` exception. Nobody wants that.
 
 Luckily, `ElementalComponent` has multiple ways to register your component.
-Sure, you could use the native custom element API [customElements.define(...)](https://developer.mozilla.org/en-US/docs/Web/API/CustomElementRegistry/define)
+Sure, you could use the native custom element
+API [customElements.define(...)](https://developer.mozilla.org/en-US/docs/Web/API/CustomElementRegistry/define)
 if you really wanted to, but we don't recommend it. Why? Well, because `ElementalComponent` has better ways to handle
 errors, manage prefix alteration, and provide logging for easier debugging. Trust us, your future self will thank you.
 
-Now, you might be wondering - what's the better way to register my component, then? We're glad you asked. Keep reading for a simpler and more elegant solution.
+Now, you might be wondering - what's the better way to register my component, then? We're glad you asked. Keep reading
+for a simpler and more elegant solution.
 
 ::: tip 💁 Auto generated ID
-All components when instantiated will get an auto-generated `id` if one is not provided, but as always you have the power to configure it.
+All components when instantiated will get an auto-generated `id` if one is not provided, but as always you have the
+power to configure it.
 :::
 
 ## RegistrationOptions
@@ -27,16 +31,18 @@ All elemental way of registration supports these _optional_ configuration proper
 | prefix     | `ElementalComponentPrefix` | The custom prefix for the element. Custom element native API mandates a tag name with dash hence if a prefix is not configured, all elements will be prefixed with `el-` prefix.                                                                                |
 | templateId | `string`                   | The ID of the template that should be used as a template for this component. This option allows us to reuse existing templates                                                                                                                                  |
 | template   | `string`                   | The template HTML code that should be registered with the component.                                                                                                                                                                                            |
-| styles     | `string`                   | CSS styles code that will be registered with the component. If the browser supports `adoptedStyleSheets` then we will cache the styles and they will be intelligently used by all component instances without duplication thereby saving precious parsing time. |
+| styles     | `string` or `string[]`     | CSS styles code that will be registered with the component. If the browser supports `adoptedStyleSheets` then we will cache the styles and they will be intelligently used by all component instances without duplication thereby saving precious parsing time. |
 | extends    | `string`                   | 👺 `deprecated` DO NOT use! <br/> <br/> The extension of native HTML components is not supported by Safari. The team has decided to not support it in the future either. So use this functionality with caution.                                                |
 
 ### Configure a default custom prefix
 
 As noted above, custom element native API mandates a tag name with dash hence if a prefix is not configured,
-all `ElementalComponent` components will be prefixed with `el-` prefix. However, this can be overridden globally or per component basis to suit your preferences.
+all `ElementalComponent` components will be prefixed with `el-` prefix. However, this can be overridden globally or per
+component basis to suit your preferences.
 
 The below code shows how to globally override the prefix to your custom value. Subsequently, any additional components
-registered will utilize the newly set default prefix without the need for explicit inclusion during the registration process.
+registered will utilize the newly set default prefix without the need for explicit inclusion during the registration
+process.
 
 ```ts
 ElementalComponentRegistry.setDefaultPrefix(
@@ -139,10 +145,13 @@ The template can be accessed through the read-only instance property `$template`
 
 #### Link a different template
 
-Assume that a template with the id for example, "custom-template" is already present in the DOM, it can be utilized during the
-instantiation of an elemental component by passing the `templateId` parameter. The component will then use the specified template at runtime.
+Assume that a template with the id for example, "custom-template" is already present in the DOM, it can be utilized
+during the
+instantiation of an elemental component by passing the `templateId` parameter. The component will then use the specified
+template at runtime.
 
-If a template is not found registered by that id, an exception `ElementalComponentNoSuchTemplateFoundException` will be thrown.
+If a template is not found registered by that id, an exception `ElementalComponentNoSuchTemplateFoundException` will be
+thrown.
 
 ::: warning It's a reference not a copy
 When a `templateId` is supplied, and a corresponding template is found within the DOM,
@@ -183,4 +192,5 @@ export class Magician extends ElementalComponent {
 ElementalComponent.register(Magician, { template, styles });
 ```
 
-Now that you know how to register your components, take a look at in the next chapter how you can instantiate and use them.
+Now that you know how to register your components, take a look at in the next chapter how you can instantiate and use
+them.

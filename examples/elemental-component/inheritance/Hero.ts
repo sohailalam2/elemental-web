@@ -3,11 +3,12 @@ import { deserialize, randomHex, serialize } from '@sohailalam2/abu';
 
 import { Component, EventListener, ObservedState, StatefulElementalComponent } from '../../../src';
 
-import styles from './styles.css?inline';
+import styles1 from './styles1.css?inline';
+import styles2 from './styles2.css?inline';
 import template from './template.html?raw';
 import { HeroMessage, State } from './State';
 
-@Component({ template, styles })
+@Component({ template, styles: [styles1, styles2] })
 export class Hero extends StatefulElementalComponent<State> {
   @ObservedState
   name = '';
