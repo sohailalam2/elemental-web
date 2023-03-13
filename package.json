@@ -97,6 +97,26 @@
     "./elemental-component": {
       "import": "./dist/elemental-component/index.mjs",
       "require": "./dist/elemental-component/index.js"
+    },
+    "./elemental-component/component": {
+      "import": "./dist/elemental-component/component/index.mjs",
+      "require": "./dist/elemental-component/component/index.js"
+    },
+    "./elemental-component/decorator": {
+      "import": "./dist/elemental-component/decorator/index.mjs",
+      "require": "./dist/elemental-component/decorator/index.js"
+    },
+    "./elemental-component/event": {
+      "import": "./dist/elemental-component/event/index.mjs",
+      "require": "./dist/elemental-component/event/index.js"
+    },
+    "./elemental-component/registry": {
+      "import": "./dist/elemental-component/registry/index.mjs",
+      "require": "./dist/elemental-component/registry/index.js"
+    },
+    "./elemental-component/template": {
+      "import": "./dist/elemental-component/template/index.mjs",
+      "require": "./dist/elemental-component/template/index.js"
     }
   },
   "husky": {
