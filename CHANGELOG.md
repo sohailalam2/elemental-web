@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.1](https://github.com/sohailalam2/elemental-web/compare/v0.4.0...v0.4.1) (2023-03-13)
+
+### Features
+
+- add support for multiple styles ([87aad00](https://github.com/sohailalam2/elemental-web/commit/87aad0020d22c5d56b26f6eb335a671aff5390f7))
+
 ## [0.4.0](https://github.com/sohailalam2/elemental-web/compare/v0.3.0...v0.4.0) (2023-03-12)
 
 ### Features
